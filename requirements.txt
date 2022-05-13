@@ -1,0 +1,13 @@
+numpy
+pandas
+python-dotenv
+nanpy
+#matplotlib
+#jupyterlab
+dash
+#jupyter-dash
+#jupyterlab-dash
+#keras
+#keras_tqdm
+#tensorflow
+#sklearn
