@@ -3,7 +3,7 @@ import time
 
 class ValveServo:
     def __init__(self, arduino_obj, state, pin):
-        self.pins = pin # which pin on the Arduino
+        self.pins = pin # which pin on the Arduino, use pwm-enabled ones: 3, 5, 6, 9, 10, 11
         self.servo = Servo(pin=pin) # does this go below in the initialisation section? 
         self.arduino_obj = arduino_obj # the arduino api
         self.state = state # i.e. which position the servo is in, zero returns to this state
