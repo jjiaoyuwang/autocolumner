@@ -3,12 +3,53 @@ import time
 
 class ArmStepper: # I need to come up with a better name for this
     def __init__(self, arduino_obj, state, motor_type, revsteps, pins):
-        self.motor_type = motor_type # currently, either a NEMA17 or 28BYJ-48
-        self.arduino_obj = arduino_obj # the arduino api
-        self.pins = pins # which (2) pins on the Arduino, ['x1','x2']
+        '''
+        if motor_type == 'NEMA17', it is assumed that the A4988 driver is being used
+        conversely, if motor_type == '28BYJ-48', a ULN2003 driver is being used
+        '''
+
+        self.motor_type = motor_type # currently, either a 'NEMA17' or '28BYJ-48'. String
+        self.arduino_obj = arduino_obj # the pre-initialised arduino api
+        self.revsteps = revsteps # number of revolutions to complete a full revolution
+        self.pins = pins 
+        # which pins on the Arduino, a list of integers ['x1','x2',...]. 
+        # for motor_type == 'NEMA17', expecting 3 elements in the array [dir, step, enable]
+        # for motor_type == '28BYJ-48', expecting 4 elements in the array. 
+        # exception will be thrown if these conditions are not met
+
+        if motor_type == 'NEMA17' and len(self.pins) != 3:
+            raise Exception("Invalid number of pins selected for given motor")
+
+        if motor_type == '28BYJ-48' and len(self.pins) != 4:
+            raise Exception("Invalid number of pins selected for given motor")
+
         self.state = state # boolean i.e. which position the servo is in, zero returns to this state. One is another state.
 
+        # initialise Arduino pins
+        for pin_number in self.pins:
+            self.arduino_obj.pinMode(pin_number, self.arduino_obj.OUTPUT)
+
+        # ensure the motor is initially disabled
+        # for the A4988, there is an enable pin which when high, will cut power to the stepper coils.
+        # for the ULN2003, I just need to cut power to each of the 4 individual pins.
+        if motor_type == 'NEMA17':
+            self.arduino_obj.digitalWrite(self.pins[2], self.arduino_obj.HIGH)
+        
+        if motor_type == '28BYJ-48':
+            # initialise a stepper instance. Only applicable for ULN2003. 
+            self.stepper = Stepper(self.revsteps=2048,self.pin[0], self.pin[1], self.pin[2], self.pin[3])
+
+            for pin_number in self.pins:
+                self.arduino_obj.digitalWrite(pin_number, self.arduino_obj.LOW)
+            
+
+        
+
+
         # assume that I'm using the A4988 driver
+
+
+        # the code below only works with ULN2003 driver. 
         self.stepper = Stepper(revsteps=revsteps,pin1=pins[0],pin2=pins[1])
 
         # initialise relevant pins on the stepper, assumed that I'm using the ULN2003 driver
@@ -23,7 +64,16 @@ class ArmStepper: # I need to come up with a better name for this
 
     # I probably don't need to manually encode the step method, since it's already part of the Stepper() function.
     # if not, refer back to your old code. 
-        
+
+    def move_stepper(self, degrees, movement_speed = 5):
+        '''
+        Move the stepper motor by predetermined angle in degrees. Positive number => anti clockwise and vice versa. 
+        '''
+        stepper_test.step(1000)
+        if self.motor_type == '28BYJ-48':
+            self.stepper.setSpeed = movement_speed # value in rpm
+            self.stepper.step(degrees / 360. * self.revsteps)
+            
 
 
 
