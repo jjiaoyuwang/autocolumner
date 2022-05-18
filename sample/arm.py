@@ -37,50 +37,67 @@ class ArmStepper: # I need to come up with a better name for this
         
         if motor_type == '28BYJ-48':
             # initialise a stepper instance. Only applicable for ULN2003. 
-            self.stepper = Stepper(self.revsteps=2048,self.pin[0], self.pin[1], self.pin[2], self.pin[3])
+            self.stepper = Stepper(self.revsteps,self.pins[0], self.pins[1], self.pins[2], self.pins[3])
 
             for pin_number in self.pins:
                 self.arduino_obj.digitalWrite(pin_number, self.arduino_obj.LOW)
-            
+             
 
+    def de_energise(self):
+        '''
+        Cut power to the stepper's coils. Allows the motor to be repositioned over a desired area.
+        '''
+        # same code as above
+        # for the A4988, there is an enable pin which when high, will cut power to the stepper coils.
+        # for the ULN2003, I just need to cut power to each of the 4 individual pins.
+        if self.motor_type == 'NEMA17':
+            self.arduino_obj.digitalWrite(self.pins[2], self.arduino_obj.HIGH)
         
+        if self.motor_type == '28BYJ-48':
+            for pin_number in self.pins:
+                self.arduino_obj.digitalWrite(pin_number, self.arduino_obj.LOW)
 
-
-        # assume that I'm using the A4988 driver
-
-
-        # the code below only works with ULN2003 driver. 
-        self.stepper = Stepper(revsteps=revsteps,pin1=pins[0],pin2=pins[1])
-
-        # initialise relevant pins on the stepper, assumed that I'm using the ULN2003 driver
-        # apparently the Stepper() method is compatible with bipolar drivers too...
-        # worth a try, check documentation: https://github.com/nanpy/nanpy/blob/master/nanpy/stepper.py
-        # self.arduino_obj.pinMode(self.pins[0], self.arduino_obj.OUTPUT)
-        # self.arduino_obj.pinMode(self.pins[1], self.arduino_obj.OUTPUT)
-        # self.arduino_obj.pinMode(self.pins[2], self.arduino_obj.OUTPUT)
-        # self.arduino_obj.pinMode(self.pins[3], self.arduino_obj.OUTPUT)
-
-        # consider using Nanpy Stepper function or Accel
-
-    # I probably don't need to manually encode the step method, since it's already part of the Stepper() function.
-    # if not, refer back to your old code. 
 
     def move_stepper(self, degrees, movement_speed = 5):
         '''
         Move the stepper motor by predetermined angle in degrees. Positive number => anti clockwise and vice versa. 
         '''
-        stepper_test.step(1000)
+
         if self.motor_type == '28BYJ-48':
             self.stepper.setSpeed = movement_speed # value in rpm
             self.stepper.step(degrees / 360. * self.revsteps)
-            
 
+            # do I de-energise the motors after I'm finished with them? Uncomment the line below.
+            # self.de_energise()
+
+
+        if self.motor_type == 'NEMA17':
+            # note that for the A4988 driver, there is no stepper instance.
+            # first, enable the stepper if not done so already and set direction of rotation
+
+            self.arduino_obj.digitalWrite(self.pins[2], self.arduino_obj.LOW)
+
+            if degrees >= 0:
+                self.arduino_obj.digitalWrite(self.pins[0],self.arduino_obj.LOW)
+            else:
+                self.arduino_obj.digitalWrite(self.pins[0],self.arduino_obj.HIGH)
+
+            # given an input speed, set the steps per second
+            write_delay = movement_speed * self.revsteps / 60. 
+            x = 0
+            while x < degrees / 360. * self.revsteps: # number of steps
+                self.arduino_obj.digitalWrite(self.pins[1], self.arduino_obj.HIGH )
+                time.sleep(write_delay)
+                self.arduino_obj.digitalWrite(self.pins[1], self.arduino_obj.LOW)
+                time.sleep(write_delay)
+                x = x + 1
+
+            # self.de_energise()
 
 
     # create another class for the whole arm object that inherits ArmStepper class above. 
-    # apparently stepper class only takes 2 pins i.e. direction and step for A4988 boards
-    # might need to create another class for ULN2003 boards which I'm using
 
+    # might need to create another class for ULN2003 boards which I'm using
 class RoboticArm:
     def __init__(self, motors, fraction_coordinates, seq_params, kinematic_model, state = None):
         '''
