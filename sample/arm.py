@@ -1,5 +1,40 @@
 from nanpy import (ArduinoApi, SerialManager, Stepper, Servo)
 import time
+import keras
+import numpy
+
+
+def frac_int_to_string(fraction_number):
+    '''
+    helper function to convert a fraction number x (int) to string 'fractionx'
+    '''
+    return 'fraction'+str(fraction_number)
+
+def frac_string_to_int(fraction_number):
+    '''
+    helper function to convert 'fractionx' string to int x
+    '''
+    return int(fraction_number[-1])
+
+# define a check of whether the fraction number being input is valid
+
+def check_frac_is_valid(fraction_number, fraction_coordinates_dict):
+    '''
+    helper function to check whether the given fraction_number is valid i.e. is it in the fraction_coordinates_dict keys?
+    fraction_coordinates_dict has structure: 'fraction0', ..., 'fractionn, waste' and values numpy arrays for cartesian coordinates
+
+    fraction_number - int (same indexing as python lists)
+
+    this is done by using the find() function. find will return the position of the string when we look for 'fraction' or -1 if the search wasn't successful
+    https://www.w3schools.com/python/ref_string_find.asp
+
+    implemented as list comprehension to make it reasonably tidy: https://pythonsolved.com/how-to-filter-list-in-python/
+
+    returns result as a boolean
+    '''
+
+    valid_fracs = [x for x in fraction_coordinates_dict.keys() if(x.find('fraction') != -1)]
+    return frac_int_to_string(fraction_number) in valid_fracs
 
 class ArmStepper: # I need to come up with a better name for this
     def __init__(self, arduino_obj, state, motor_type, revsteps, pins):
@@ -57,6 +92,14 @@ class ArmStepper: # I need to come up with a better name for this
             for pin_number in self.pins:
                 self.arduino_obj.digitalWrite(pin_number, self.arduino_obj.LOW)
 
+    def re_energise(self):
+        '''
+        Renable stepper motors. Opposite to de_energise function. Not particularly important for the ULN2003 driver since the board will automatically make the pins high again. For A4988 however, the ENABLE pin needs to be set low before the power will be delivered to the motor again. It's probably safer to call this function before you call methods to move the steppers. 
+        '''
+
+        if self.motor_type == 'NEMA17':
+            self.arduino_obj.digitalWrite(self.pins[2], self.arduino_obj.LOW)
+
 
     def move_stepper(self, degrees, movement_speed = 5):
         '''
@@ -106,6 +149,7 @@ class RoboticArm:
         fraction_coordinates - the location of the fraction tubes. Need to write a helper script to extract positions from pictures. Dictionary with keys: 'fraction0', ..., 'fractionn, waste' and values numpy arrays for cartesian coordinates. 
         seq_params - the gradient for each fraction. This doesn't belong here. Need to create a new run type class
         kinematic_model - inverse kinematic model (keras) used to solve for angular coordinates, given cartesian
+        fraction - int storing the current position of the robotic arm (over a given fraction). initialised at 0. 
         '''
 
         self.motor1 = motors[0] # the motors argument are two instances of ArmStepper for each axis of the robotic arm
@@ -122,22 +166,67 @@ class RoboticArm:
             else:
                 self.state = 1
 
-
         self.fraction_coordinates = fraction_coordinates
-        self.kinematic_model = kinematic_model # this will be a keras / h5 object
+        self.kinematic_model = keras.models.load_model(kinematic_model) # this will be a keras / h5 model
 
-        self.fraction = None # define the fraction variable but don't use it just yet. We'll initialise it at the beginning of a run. 
+        # initialise the fraction variable by prompting user to manualy move the arm to first fraction and then setting this as home (i.e. fraction0)
+
+        self.motor1.de_energise()
+        self.motor2.de_energise()
+
+        input("Manually position the robot's arms over the first fraction (fraction 0). Then press Enter.")
+
+        self.fraction = 0
+        self.state = 0
+
+    def go_to_frac(self, target_fraction, arm_speed = 5):
+        '''
+        target_fraction - int for fractions tubes, or string with the frac_coord dictionary key
+
+        1. given current fraction, calculate theta1_i and theta2_i
+        2. from target fraction (x1,x2), calculate theta1_f and theta2_f
+        3. send to motor1.step,  'move_stepper' theta2_f - theta2_i and arm_speed. 
+        4. do the same for motor2. 
+        5. change the state of the fraction
+        '''
+
+        if type(target_fraction) is int:
+            if check_frac_is_valid(target_fraction, self.fraction_coordinates) is not True:
+                raise Exception("The fraction number you've indicated is not in the valid range of pre-defined fraction positions.")
+        else:
+            if target_fraction is not in self.fraction_coordinates.keys():
+                raise Exception("The fraction str you've indicated is not in the valid range of pre-defined fraction positions.")
+
+        current_coordinates = self.fraction_coordinates(frac_int_to_string(self.fraction))
+
+        theta1_i = numpy.degrees(self.kinematic_model.predict(current_coordinates[0]))
+        theta2_i = numpy.degrees(self.kinematic_model.predict(current_coordinates[1]))
+
+        target_coordinates = self.fraction_coordinates(frac_int_to_string(target_fraction))
+
+        theta1_f = numpy.degrees(self.kinematic_model.predict(target_coordinates[0]))
+        theta2_f = numpy.degrees(self.kinematic_model.predict(target_coordinates[1]))
+
+        # use motor speed as 5 rpm for now. this can be adjusted later
+        self.motor1.re_energise()
+        self.motor2.re_energise()
+        self.motor1.move_stepper(theta1_f - theta1_i, arm_speed)
+        self.motor2.move_stepper(theta2_f - theta2_i, arm_speed)
+        self.motor1.de_energise()
+        self.motor2.de_energise()
+
+        self.fraction = target_fraction
 
         
     def home(self):
         '''
-        Move the arm to the home position (typically fraction 0). Then set state to be 'home'. 
+        Move the arm to the home position (typically fraction 0). Then set position to be 'home' and state to be 'homed'. 
+
+        Do the movement by calling self.go_to_frac(0)
         '''
 
-        # get current position, work out angular coordinates.
-        # get home position, work out angular coordinates.
-        # feed the difference into the motorn.step() methods
-        # (done) set the state and fraction values respectively
+        self.go_to_frac(0)
+
         self.fraction = 0
         self.state = 0
 
@@ -149,7 +238,11 @@ class RoboticArm:
         # after a stepper motor moves, is power automatically cut or do I have to do this manually? 
         # probably, see: https://forum.arduino.cc/t/turning-off-the-stepper/602198
         # https://forum.arduino.cc/t/turning-off-a-stepper-motor-with-code-not-hardware/354506
+        # edit: implemented the above notes in ArmStepper class
 
+        self.motor1.de_energise()
+        self.motor2.de_energise()
+        
         input("Manually position the robot's arms over the first fraction (fraction 0). Then press Enter.")
 
         self.fraction = 0
@@ -157,40 +250,40 @@ class RoboticArm:
 
     def next_frac(self):
         '''
-        (done) Do I need fraction (no)? Can't I just get current fraction from the self.fraction attribute (yes)? 
+        get current fraction (self.fraction) and move the arm to the next fraction. makes a call to self.go_to_frac
         '''
 
-        # (done) I need to define how to store the 'fraction' variable. Do I use state or create a new variable? Created a new variable. 
+        # check that the next fraction is in self.fraction_coordinates.keys()
 
-        # get the current fraction
+        if frac_int_to_string(self.fraction+1) is not in self.fraction_coordinates.keys():
+            raise Exception("You are either at the last fraction or your current fraction is not well defined.")
 
-        # I need logic that handles when the final fraction tube has been reached. 
-        # test if the fraction number is valid (less than len(self.fraction_coordinates.keys())
-        if self.fraction not in range(len(self.fraction_coordinates.keys())):
-            raise Exception("Fraction number invalid")
-
-        # get the coordinates of the current fraction
-        # make sure that self.fraction is initialised before running this!
-        if self.fraction is None:
-            # later to do: prompt the user to manually set the fraction
-            raise Exception("Fraction number not set!")
-        current_coords = self.fraction_coordinates[self.fraction]
+        self.go_to_frac(self.fraction+1)
 
         # write the value of the new fraction
         self.fraction = self.fraction + 1
 
+
     def prev_frac(self):
-        # finish next_frac first
-        pass
+        '''
+        get current fraction (self.fraction) and move the arm to the previous fraction. makes a call to self.go_to_frac
+        '''
+        # check that the previous fraction is in self.fraction_coordinates.keys()
 
-    def go_to_frac(self, fraction):
-        # finish next_frac first
-        pass
+        if frac_int_to_string(self.fraction-1) is not in self.fraction_coordinates.keys():
+            raise Exception("You are either at the first fraction or your current fraction is not well defined.")
 
-    def go_to_waste(self):
-        pass
+        self.go_to_frac(self.fraction-1)
 
+        # write the value of the new fraction
+        self.fraction = self.fraction - 1
+        
 
+    def go_to_waste(self): 
+        # check if 'waste' is in the dictionary keys and throw an exception if it's not.
 
+        if 'waste' not in self.fraction_coordinates.keys():
+            raise Exception("Waste fraction has not been defined.")
 
-# state here refers to both (AND) stepper motors involved are all in state zero.
+        self.go_to_frac('waste')
+
