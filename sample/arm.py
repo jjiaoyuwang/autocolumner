@@ -2,6 +2,7 @@ from nanpy import (ArduinoApi, SerialManager, Stepper, Servo)
 import time
 import keras
 import numpy
+from sklearn import preprocessing
 
 
 def frac_int_to_string(fraction_number):
@@ -37,12 +38,12 @@ def check_frac_is_valid(fraction_number, fraction_coordinates_dict):
     return frac_int_to_string(fraction_number) in valid_fracs
 
 class ArmStepper: # I need to come up with a better name for this
-    def __init__(self, arduino_obj, state, motor_type, revsteps, pins):
+    def __init__(self, connection, arduino_obj, state, motor_type, revsteps, pins):
         '''
         if motor_type == 'NEMA17', it is assumed that the A4988 driver is being used
         conversely, if motor_type == '28BYJ-48', a ULN2003 driver is being used
         '''
-
+        self.connection = connection
         self.motor_type = motor_type # currently, either a 'NEMA17' or '28BYJ-48'. String
         self.arduino_obj = arduino_obj # the pre-initialised arduino api
         self.revsteps = revsteps # number of revolutions to complete a full revolution
@@ -72,7 +73,8 @@ class ArmStepper: # I need to come up with a better name for this
         
         if motor_type == '28BYJ-48':
             # initialise a stepper instance. Only applicable for ULN2003. 
-            self.stepper = Stepper(self.revsteps,self.pins[0], self.pins[1], self.pins[2], self.pins[3])
+                        
+            self.stepper =  Stepper(self.revsteps, pin1 = self.pins[0], pin2 = self.pins[1], speed=5, connection=self.connection, pin3=self.pins[2], pin4=self.pins[3])
 
             for pin_number in self.pins:
                 self.arduino_obj.digitalWrite(pin_number, self.arduino_obj.LOW)
@@ -104,6 +106,8 @@ class ArmStepper: # I need to come up with a better name for this
     def move_stepper(self, degrees, movement_speed = 5):
         '''
         Move the stepper motor by predetermined angle in degrees. Positive number => anti clockwise and vice versa. 
+
+        Note that movement_speed isn't working for 28BYJ-48 motor. Instead, you'll need to set it manually in the class above. Temporary fix. 
         '''
 
         if self.motor_type == '28BYJ-48':
@@ -111,7 +115,7 @@ class ArmStepper: # I need to come up with a better name for this
             self.stepper.step(degrees / 360. * self.revsteps)
 
             # do I de-energise the motors after I'm finished with them? Uncomment the line below.
-            # self.de_energise()
+            #self.de_energise()
 
 
         if self.motor_type == 'NEMA17':
@@ -124,32 +128,30 @@ class ArmStepper: # I need to come up with a better name for this
                 self.arduino_obj.digitalWrite(self.pins[0],self.arduino_obj.LOW)
             else:
                 self.arduino_obj.digitalWrite(self.pins[0],self.arduino_obj.HIGH)
+                degrees = degrees * -1
 
             # given an input speed, set the steps per second
-            write_delay = movement_speed * self.revsteps / 60. 
+            write_delay = 1. / (movement_speed * self.revsteps / 60.)
             x = 0
-            while x < degrees / 360. * self.revsteps: # number of steps
+            while x < (degrees / 360. * self.revsteps): # number of steps
                 self.arduino_obj.digitalWrite(self.pins[1], self.arduino_obj.HIGH )
                 time.sleep(write_delay)
                 self.arduino_obj.digitalWrite(self.pins[1], self.arduino_obj.LOW)
                 time.sleep(write_delay)
                 x = x + 1
 
-            # self.de_energise()
+            self.de_energise()
 
 
-    # create another class for the whole arm object that inherits ArmStepper class above. 
-
-    # might need to create another class for ULN2003 boards which I'm using
 class RoboticArm:
-    def __init__(self, motors, fraction_coordinates, seq_params, kinematic_model, state = None):
+    def __init__(self, motors, fraction_coordinates, kinematic_model, kinematic_model_training_set_path, state = None):
         '''
         motors - 2 element list containing instantiated ArmStepper objects 
         state -  (optional) if the arm is at the home position (0) or not (1). Consider using booleans T/Fs instead of 0,1...
         fraction_coordinates - the location of the fraction tubes. Need to write a helper script to extract positions from pictures. Dictionary with keys: 'fraction0', ..., 'fractionn, waste' and values numpy arrays for cartesian coordinates. 
-        seq_params - the gradient for each fraction. This doesn't belong here. Need to create a new run type class
         kinematic_model - inverse kinematic model (keras) used to solve for angular coordinates, given cartesian
         fraction - int storing the current position of the robotic arm (over a given fraction). initialised at 0. 
+        i_scaler - feed in the training set for the kinematic model
         '''
 
         self.motor1 = motors[0] # the motors argument are two instances of ArmStepper for each axis of the robotic arm
@@ -159,7 +161,7 @@ class RoboticArm:
         if state is not None: # option to manually set the state of the arm
             self.state = state
         else:
-            if motors != 2: # if no option for state specified, infer the state from the individual motors.
+            if len(motors) != 2: # if no option for state specified, infer the state from the individual motors.
                 raise Exception("Only two arm fraction collectors are supported at this point")
             if self.motor1.state == 0 and self.motor2.state == 0: # boolean i.e. both stepper motors need to be homed for this state to return 0. 
                 self.state = 0
@@ -167,6 +169,10 @@ class RoboticArm:
                 self.state = 1
 
         self.fraction_coordinates = fraction_coordinates
+        self.i_scaler = preprocessing.MinMaxScaler(feature_range=(-1.,1.))
+        test_data = numpy.load(kinematic_model_training_set_path)
+        test_data = test_data[:,2:]
+        self.i_scaler.fit(test_data)
         self.kinematic_model = keras.models.load_model(kinematic_model) # this will be a keras / h5 model
 
         # initialise the fraction variable by prompting user to manualy move the arm to first fraction and then setting this as home (i.e. fraction0)
@@ -194,24 +200,27 @@ class RoboticArm:
             if check_frac_is_valid(target_fraction, self.fraction_coordinates) is not True:
                 raise Exception("The fraction number you've indicated is not in the valid range of pre-defined fraction positions.")
         else:
-            if target_fraction is not in self.fraction_coordinates.keys():
+            if target_fraction not in self.fraction_coordinates.keys():
                 raise Exception("The fraction str you've indicated is not in the valid range of pre-defined fraction positions.")
+        print(self.fraction_coordinates)
 
-        current_coordinates = self.fraction_coordinates(frac_int_to_string(self.fraction))
+        current_coordinates = self.fraction_coordinates[frac_int_to_string(self.fraction)]
+        theta_i = numpy.degrees(self.kinematic_model.predict(self.i_scaler.transform(current_coordinates.reshape((1,2)))))
+        theta_i = theta_i.reshape(-1)
 
-        theta1_i = numpy.degrees(self.kinematic_model.predict(current_coordinates[0]))
-        theta2_i = numpy.degrees(self.kinematic_model.predict(current_coordinates[1]))
+        target_coordinates = self.fraction_coordinates[frac_int_to_string(target_fraction)]
+        theta_f = numpy.degrees(self.kinematic_model.predict(self.i_scaler.transform(target_coordinates.reshape((1,2)))))
+        theta_f = theta_f.reshape(-1)
 
-        target_coordinates = self.fraction_coordinates(frac_int_to_string(target_fraction))
+        for key in self.fraction_coordinates:
+            print(numpy.degrees(self.kinematic_model.predict(self.fraction_coordinates[key].reshape((1,2)))))
 
-        theta1_f = numpy.degrees(self.kinematic_model.predict(target_coordinates[0]))
-        theta2_f = numpy.degrees(self.kinematic_model.predict(target_coordinates[1]))
 
         # use motor speed as 5 rpm for now. this can be adjusted later
         self.motor1.re_energise()
         self.motor2.re_energise()
-        self.motor1.move_stepper(theta1_f - theta1_i, arm_speed)
-        self.motor2.move_stepper(theta2_f - theta2_i, arm_speed)
+        self.motor1.move_stepper(theta_f[0] - theta_i[0], 5)
+        self.motor2.move_stepper(theta_f[1] - theta_i[1], arm_speed)
         self.motor1.de_energise()
         self.motor2.de_energise()
 
@@ -255,7 +264,7 @@ class RoboticArm:
 
         # check that the next fraction is in self.fraction_coordinates.keys()
 
-        if frac_int_to_string(self.fraction+1) is not in self.fraction_coordinates.keys():
+        if frac_int_to_string(self.fraction+1) not in self.fraction_coordinates.keys():
             raise Exception("You are either at the last fraction or your current fraction is not well defined.")
 
         self.go_to_frac(self.fraction+1)
@@ -270,7 +279,7 @@ class RoboticArm:
         '''
         # check that the previous fraction is in self.fraction_coordinates.keys()
 
-        if frac_int_to_string(self.fraction-1) is not in self.fraction_coordinates.keys():
+        if frac_int_to_string(self.fraction-1) not in self.fraction_coordinates.keys():
             raise Exception("You are either at the first fraction or your current fraction is not well defined.")
 
         self.go_to_frac(self.fraction-1)

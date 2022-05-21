@@ -27,5 +27,5 @@ class ValveServo:
         '''
         make a call to self.move and close the valve associated with the servo
         '''
-        self.move(self.angles[0])
+        self.move(self.angles[1])
 
