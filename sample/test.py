@@ -23,8 +23,11 @@ PUMP2_FLOW_RATE = 20.
 
 # robotic arm specific variables
 FRACTION_COORDS_PATH = "../scripts/test_coords_20052022.pickle" # path to numpy array of coordinates
-ROBOT_MODEL_FILE = "../scripts/19052022_s100_model1.h5" # path to models file
-KINEMATIC_TEST_FILE = "../scripts/dataMat_12052022.npy"
+ARM1_LENGTH = 86.
+ARM2_LENGTH = 55.
+
+#ROBOT_MODEL_FILE = "../scripts/19052022_s100_model1.h5" # path to models file
+#KINEMATIC_TEST_FILE = "../scripts/dataMat_12052022.npy"
 
 # robot arm fraction coordinates preprocessing for testing purposes
 # these were generated with the help of get_coords_from_pic.py script under scripts/
@@ -125,28 +128,34 @@ def jog_arm(connection, arduino_obj):
     # axis2.move_stepper(180)
     # axis2.move_stepper(-180)
 
-    robot_arm_test = arm.RoboticArm([axis1,axis2], FRACTION_COORDS, ROBOT_MODEL_FILE, KINEMATIC_TEST_FILE)
+    robot_arm_test = arm.RoboticArm([axis1,axis2], FRACTION_COORDS, ARM1_LENGTH, ARM2_LENGTH)
 
     # print(robot_arm_test.fraction_coordinates)
 
     print("Go to next fraction")
-    robot_arm_test.next_frac()
-    time.sleep(5)
-    robot_arm_test.next_frac()
-    time.sleep(5)
-    robot_arm_test.next_frac()
-    time.sleep(5)
+    # robot_arm_test.next_frac()
+    robot_arm_test.go_to_frac(1,5)
+
+    print("Go to next fraction")
+    # robot_arm_test.next_frac()
+    robot_arm_test.go_to_frac(2,5)
+
+    print("Go to next fraction")
+    # robot_arm_test.next_frac()
+    robot_arm_test.go_to_frac(3,5)
+
+    print("Go home")
     robot_arm_test.home()
 
-    # print("Go to fraction 5")
-    # robot_arm_test.go_to_frac(5,5)
-    # time.sleep(5)
-    # robot_arm_test.set_home()
-    # print("Go to fraction 6")
-    # robot_arm_test.go_to_frac(6,5)
-    # time.sleep(5)
-    # print("Go to previous fraction")
-    # robot_arm_test.prev_frac()
+    print("Go to fraction 5")
+    robot_arm_test.go_to_frac(5,5)
+
+    robot_arm_test.set_home()
+    print("Go to fraction 6")
+    robot_arm_test.go_to_frac(6,5)
+
+    print("Go to previous fraction")
+    robot_arm_test.next_frac()
 
     print("Testing of the robotic arm complete")
     

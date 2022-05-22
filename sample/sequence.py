@@ -1,167 +1,111 @@
 from nanpy import (ArduinoApi, SerialManager, Stepper)
 import pumps, servos, arm
-import time
-import logging
+import time, logging, configparser, numpy
 
-logging.basicConfig(level=logging.DEBUG)
+# create a class for a sequence / run
+# init method: load params from file
+# https://www.tutorialspoint.com/configuration-file-parser-in-python-configparser
 
-def test_servo():
-    # on pin 2
-    try:
-        connection = SerialManager(device='/dev/ttyACM0')
-        a = ArduinoApi(connection=connection)
-        print("Connection successful")
-    except Exception as e:
-        print(e)
-
-    servo_test = servos.ValveServo(arduino_obj=a,state=0,pin=2)
-    print("Successfully create servo instance")
-
-    for elem in [0.,90.,180.,90.,0]:
-        servo_test.servo.write(elem)
-        time.sleep(2)
-
-    print(servo_test.servo.attached())
-
-def test_stepper_NEMA(pin1=8,pin2=9,pin3=13):
-    try:
-        connection = SerialManager(device='/dev/ttyACM0')
-        a = ArduinoApi(connection=connection)
-        print("Connection successful")
-
-        # not successful with the modified 28BYJ-48 and A4988 driver.
-        # stepper_test = arm.ArmStepper(arduino_obj=a,state=0,motor_type='28BYJ-48',revsteps=4000.,pins=[10,9])
-        # stepper_test.stepper.setSpeed(1000)
-        # stepper_test.stepper.step(50)
-
-        # stepper_test = Stepper(revsteps=3200,pin1=11,pin2=12)#,speed=3200)
-        # stepper_test.step(1000)
-        
-        #pin1=8 #11
-        #pin2=9 #12
-        #pin3=13 #4
-
-        a.pinMode(pin1, a.OUTPUT)
-        a.pinMode(pin2, a.OUTPUT)
-
-        a.digitalWrite(pin1, a.LOW)
-
-        a.digitalWrite(pin3,a.LOW)
-
-        #a.digitalWrite(12, a.HIGH)
-        #time.sleep(5)
-
-        # full stepping code (working)
-        #x = 0
-        #while x < 200:
-        #    a.digitalWrite(12, a.HIGH)
-        #    time.sleep(0.1)
-        #    a.digitalWrite(12, a.LOW)
-        #    time.sleep(0.1)
-        #    x = x + 1
-
-        # full microstepping code 1/16
-        write_delay = 0.00015 # what's the minimum
-        write_delay = 0.00005
-        x = 0
-        while x < 3200:
-            a.digitalWrite(pin2, a.HIGH)
-            time.sleep(write_delay)
-            a.digitalWrite(pin2, a.LOW)
-            time.sleep(write_delay)
-            x = x + 1
-
-        a.digitalWrite(pin1, a.LOW)
-        a.digitalWrite(pin2, a.LOW)
-        a.digitalWrite(pin3,a.HIGH)
-
-    except Exception as e:
-        a.digitalWrite(pin3,a.HIGH)
-        print(e)
-
-
-    print("Successfully create stepper instance")
-
-def test_stepper_BYJ():
-    try:
-        connection = SerialManager(device='/dev/ttyACM0')
-        a = ArduinoApi(connection=connection)
-        print("Connection successful")
-        
-        #a.pinMode(8, a.OUTPUT)
-        #a.pinMode(9, a.OUTPUT)
-
-        a.digitalWrite(8, a.LOW)
-
-        # not successful with 28BYJ-48 and previous A4988 driver code.
-        #stepper_test = arm.ArmStepper(arduino_obj=a,state=0,motor_type='28BYJ-48',revsteps=2048.,pins=[4,5,6,7])
-        #stepper_test.stepper.setSpeed(5)
-
-
-        stepper_test = Stepper(revsteps=2048,pin1=4, pin2=5, pin3=6, pin4=7,speed=5)
-        stepper_test.step(1000)
-        a.digitalWrite(4, a.LOW)
-        a.digitalWrite(5, a.LOW)
-        a.digitalWrite(6, a.LOW)
-        a.digitalWrite(7, a.LOW)
-
-        #x = 0
-        #while x < 2048:
-        #    stepper_test.step(1)
-        #    time.sleep(0.05)
-
-    except Exception as e:
-        print(e)
-
-
-    print("Successfully create stepper instance")
-
-def test_stepper_BYJ2():
-    try:
-        connection = SerialManager(device='/dev/ttyACM0')
-        a = ArduinoApi(connection=connection)
-        print("Connection successful")
-        
-        pin1=8
-        pin2=9
-        pin3=13
-
-        a.pinMode(pin1, a.OUTPUT)
-        a.pinMode(pin2, a.OUTPUT)
-
-        a.digitalWrite(pin1, a.LOW)
-        a.digitalWrite(pin3, a.LOW)
-
-        # not successful with 28BYJ-48 and previous A4988 driver code.
-        #stepper_test = arm.ArmStepper(arduino_obj=a,state=0,motor_type='28BYJ-48',revsteps=2048.,pins=[4,5,6,7])
-        #stepper_test.stepper.setSpeed(5)
-
-        write_delay = 0.05 # what's the minimum
-        #write_delay = 0.5
-        x = 0
-        while x < 100:
-            a.digitalWrite(pin2, a.HIGH)
-            time.sleep(write_delay)
-            a.digitalWrite(pin2, a.LOW)
-            time.sleep(write_delay)
-            x = x + 1
-
-        a.digitalWrite(pin1, a.LOW)
-        a.digitalWrite(pin2, a.LOW)
-        a.digitalWrite(pin3,a.HIGH)
-
-    except Exception as e:
-        print(e)
-
-
-    print("Successfully create stepper instance")
-
-# run the main program
+def get_params_from_file(filename):
+    '''# run the main program
 try:
     if __name__ == '__main__':
-        #test_servo()
-        test_stepper_BYJ()
-        #test_stepper_NEMA(8,9,13)
-        test_stepper_NEMA(11,12,4)
+        pass
 except Exception as e:
     print(e)
+    a helper function to read parameters from a text file
+    should be a method under class Sequence 
+    '''
+    parser = configparser.ConfigParser()
+    parser.read(filename)
+
+    for sect in parser.sections():
+        print('Section:', sect)
+        for k,v in parser.items(sect):
+            print(' {} = {}'.format(k,v))
+        
+class Sequence():
+    '''
+    fraction volume - volume of each individual fraction (in mL)
+    gradient - dictionary containing percentage of polar eluent / nonpolar eluent e.g. {'fraction0': 0, 'fraction1': 0.05, 'fraction2': 0.1, ..  }
+    '''
+    def __init__(self, frac_volumes, gradient_params):
+        self.frac_volumes = frac_volumes # someday, let this be a dictionary, for now just use a float
+        self.gradient_params = gradient_params
+        self.robotic_arm = None 
+        self.servos = [] # list; servo 1 controls 3-way tap, servo 2 controls sep funnel
+        self.pumps = [] # list; pump1 is for nonpolar eluent, pump2 is for polar eluent
+
+    def add_arm(self, motors, fraction_coordinates, arm_length_1, arm_length_2):
+        self.robotic_arm = arm.RoboticArm(motors, fraction_coordinates, arm_length_1, arm_length_2)
+        print("Successfully added new robotic arm.")
+
+    def add_servo(self, arduino_obj, state, pin, angles):
+        if self.servos is None:
+            self.servos = []
+
+        new_servo = servos.ValveServo(arduino_obj, state, pin, angles)
+        self.servos.append(new_servo)
+        print("Successfully added new servo.")
+
+    def add_pump(self, arduino_obj, flow_rate, state, pins, is_reversed=False):
+        if self.pumps is None:
+            self.pumps = []
+
+        new_pump = pumps.Pump_relay(arduino_obj, flow_rate, state, pins, is_reversed)
+        self.pumps.append(new_pump)
+        print("Successfully added new pump.")
+
+    def run(self):
+        '''
+        currently only one configuration is supported:
+        - two-arm robot fraction collector
+        - two servos, first servo always controls the three-way tap and second servo controls the separating funnel
+        - two pumps, controlled by relay
+
+        while True:
+            close servo2
+            open servo 1
+            pumps on according to the flow times
+            wait 5 seconds for eluent to pass through stationary phase
+            close servo1
+            open servo2 (drain into fraction collector)
+            wait 10 seconds
+            move to next fraction
+
+            repeat until last fraction is reached.
+        '''
+
+        if len(self.servos) != 2:
+            raise Exception("Wrong number of servos.")
+
+        if len(self.pumps) != 2:
+            raise Exception("Wrong number of pumps.")
+
+        if self.robotic_arm is None:
+            raise Exception("You are missing a robotic arm.")
+
+        pump_volumes = self.frac_volumes.copy()
+
+        for key in self.frac_volumes.keys():
+            pump_volumes[key] = self.frac_volumes[key] * numpy.array([1.0 - self.gradient_params[key], self.gradient_params[key]]) 
+        
+        print(pump_volumes)
+
+        self.robotic_arm.set_home()
+
+        while self.robotic_arm.fraction in range(len(self.frac_volumes.keys())):
+            self.servos[1].close_valve()
+            self.servos[0].open_valve()
+            time.sleep(2)
+
+            current_fraction = arm.frac_int_to_string(self.robotic_arm.fraction)
+            self.pumps[0].pump_for_vol(pump_volumes[current_fraction][0])
+            self.pumps[1].pump_for_vol(pump_volumes[current_fraction][1])
+            time.sleep(5)
+
+            self.servos[0].close_valve()
+            self.servos[1].open_valve()
+            time.sleep(10)
+
+            self.robotic_arm.next_frac()

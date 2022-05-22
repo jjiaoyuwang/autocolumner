@@ -1,8 +1,7 @@
 from nanpy import (ArduinoApi, SerialManager, Stepper, Servo)
-import time
-import keras
-import numpy
-from sklearn import preprocessing
+import time, numpy
+#import keras
+#from sklearn import preprocessing
 
 
 def frac_int_to_string(fraction_number):
@@ -36,6 +35,13 @@ def check_frac_is_valid(fraction_number, fraction_coordinates_dict):
 
     valid_fracs = [x for x in fraction_coordinates_dict.keys() if(x.find('fraction') != -1)]
     return frac_int_to_string(fraction_number) in valid_fracs
+
+def q2_from_cart(x, y, link_arm_1, link_arm_2):
+    return numpy.arccos( (x**2 + y**2 - link_arm_1**2 - link_arm_2**2) / (2 * link_arm_1 * link_arm_2) )
+
+def q1_from_cart(x, y, link_arm_1, link_arm_2):
+    theta2 = numpy.arccos( (x**2 + y**2 - link_arm_1**2 - link_arm_2**2) / (2 * link_arm_1 * link_arm_2) )
+    return numpy.arctan(y / x) - numpy.arctan( link_arm_2 * numpy.sin(theta2) / ( link_arm_1 + link_arm_2 * numpy.cos(theta2) ))
 
 class ArmStepper: # I need to come up with a better name for this
     def __init__(self, connection, arduino_obj, state, motor_type, revsteps, pins):
@@ -144,14 +150,14 @@ class ArmStepper: # I need to come up with a better name for this
 
 
 class RoboticArm:
-    def __init__(self, motors, fraction_coordinates, kinematic_model, kinematic_model_training_set_path, state = None):
+    def __init__(self, motors, fraction_coordinates, arm_length_1, arm_length_2, state = None):
         '''
         motors - 2 element list containing instantiated ArmStepper objects 
         state -  (optional) if the arm is at the home position (0) or not (1). Consider using booleans T/Fs instead of 0,1...
-        fraction_coordinates - the location of the fraction tubes. Need to write a helper script to extract positions from pictures. Dictionary with keys: 'fraction0', ..., 'fractionn, waste' and values numpy arrays for cartesian coordinates. 
-        kinematic_model - inverse kinematic model (keras) used to solve for angular coordinates, given cartesian
+        fraction_coordinates - the location of the fraction tubes. Need to write a helper script to extract positions from pictures. Dictionary with keys: 'fraction0', ..., 'fractionn, waste' and values numpy arrays for cartesian coordinates. Will be converted to angular coordinates
         fraction - int storing the current position of the robotic arm (over a given fraction). initialised at 0. 
-        i_scaler - feed in the training set for the kinematic model
+        arm_length_1 - length of robotic arm first axis 
+        arm_length_2 - length of robotic arm second axis
         '''
 
         self.motor1 = motors[0] # the motors argument are two instances of ArmStepper for each axis of the robotic arm
@@ -169,21 +175,29 @@ class RoboticArm:
                 self.state = 1
 
         self.fraction_coordinates = fraction_coordinates
-        self.i_scaler = preprocessing.MinMaxScaler(feature_range=(-1.,1.))
-        test_data = numpy.load(kinematic_model_training_set_path)
-        test_data = test_data[:,2:]
-        self.i_scaler.fit(test_data)
-        self.kinematic_model = keras.models.load_model(kinematic_model) # this will be a keras / h5 model
-
-        # initialise the fraction variable by prompting user to manualy move the arm to first fraction and then setting this as home (i.e. fraction0)
 
         self.motor1.de_energise()
         self.motor2.de_energise()
+
+        # store fraction coordinates in angular coordinate
+        for key in self.fraction_coordinates.keys():
+            self.fraction_coordinates[key] = numpy.degrees(numpy.array([ \
+                q1_from_cart(fraction_coordinates[key][0], fraction_coordinates[key][1], arm_length_1, arm_length_2), q2_from_cart(fraction_coordinates[key][0], fraction_coordinates[key][1], arm_length_1, arm_length_2) \
+                    ]))
+            
+            if numpy.isnan(self.fraction_coordinates[key][0]) or numpy.isnan(self.fraction_coordinates[key][1]):
+                new_theta1 = input("Manually position the robotic arm over {} and input theta1: ".format(key))
+                new_theta2 = input("Now input theta2: ")
+                self.fraction_coordinates[key] = numpy.asarray([float(new_theta1), float(new_theta2)])
+            
+
+        # initialise the fraction variable by prompting user to manualy move the arm to first fraction and then setting this as home (i.e. fraction0)
 
         input("Manually position the robot's arms over the first fraction (fraction 0). Then press Enter.")
 
         self.fraction = 0
         self.state = 0
+
 
     def go_to_frac(self, target_fraction, arm_speed = 5):
         '''
@@ -202,29 +216,22 @@ class RoboticArm:
         else:
             if target_fraction not in self.fraction_coordinates.keys():
                 raise Exception("The fraction str you've indicated is not in the valid range of pre-defined fraction positions.")
-        print(self.fraction_coordinates)
-
-        current_coordinates = self.fraction_coordinates[frac_int_to_string(self.fraction)]
-        theta_i = numpy.degrees(self.kinematic_model.predict(self.i_scaler.transform(current_coordinates.reshape((1,2)))))
-        theta_i = theta_i.reshape(-1)
 
         target_coordinates = self.fraction_coordinates[frac_int_to_string(target_fraction)]
-        theta_f = numpy.degrees(self.kinematic_model.predict(self.i_scaler.transform(target_coordinates.reshape((1,2)))))
-        theta_f = theta_f.reshape(-1)
 
-        for key in self.fraction_coordinates:
-            print(numpy.degrees(self.kinematic_model.predict(self.fraction_coordinates[key].reshape((1,2)))))
-
+        theta1_diff = target_coordinates[0] - self.fraction_coordinates[frac_int_to_string(self.fraction)][0]
+        theta2_diff = target_coordinates[1] - self.fraction_coordinates[frac_int_to_string(self.fraction)][1]
 
         # use motor speed as 5 rpm for now. this can be adjusted later
         self.motor1.re_energise()
         self.motor2.re_energise()
-        self.motor1.move_stepper(theta_f[0] - theta_i[0], 5)
-        self.motor2.move_stepper(theta_f[1] - theta_i[1], arm_speed)
+        self.motor1.move_stepper(theta1_diff, 5)
+        self.motor2.move_stepper(theta2_diff, arm_speed)
         self.motor1.de_energise()
         self.motor2.de_energise()
 
         self.fraction = target_fraction
+        time.sleep(2)
 
         
     def home(self):
