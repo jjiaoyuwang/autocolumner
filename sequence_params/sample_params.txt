@@ -1,27 +1,35 @@
 [Settings]
 # general settings
-SERVO1_PIN = 5 # pins for servo1 (tap)
-SERVO2_PIN = 6 # pins for servo2 (sep funnel)
-PUMP1_PIN = 2 # pins for pump1 (hexanes)
-PUMP2_PIN = 3 # pins for pump2 (polar component)
-STEPPER1_PINS = [7, 8, 9] # pins for stepper1 (theta1, closest to origin)
-STEPPER2_PINS = [10, 11, 12, 13] # pins for stepper2 (second axis)
+# pins for servo1 (tap)
+# pins for servo2 (sep funnel)
+# pins for pump1 (hexanes)
+# pins for pump2 (polar component)
+# pins for stepper1 (theta1, closest to origin)
+# pins for stepper2 (second axis)
+SERVO1_PIN = 5 
+SERVO2_PIN = 6 
+PUMP1_PIN = 2 
+PUMP2_PIN = 3 
+STEPPER1_PINS = [7, 8, 9] 
+STEPPER2_PINS = [10, 11, 12, 13] 
 
 [Servo]
 # servo specific variables
-# 125. degrees (open) means vacuum open. 25 degrees means vacuum closed (i.e. open to atmosphere)
-# 0 degrees is open, 90 degrees stopcock is closed
+# for SERVO1, 125. degrees (open) means vacuum open. 25 degrees means vacuum closed (i.e. open to atmosphere)
+# for SERVO2, 0 degrees is open, 90 degrees stopcock is closed
 SERVO1_OPEN_CLOSE_ANGLES = [125., 25.] 
 SERVO2_OPEN_CLOSE_ANGLES = [0., 90.] 
 
 [Pump]
 # pump specific variables
-PUMP1_FLOW_RATE = 20. # set to 20 mL / min for now as a test
+# set to 20 mL / min for now as a test
+PUMP1_FLOW_RATE = 20. 
 PUMP2_FLOW_RATE = 20.
 
 [Robotic Arm]
 # robotic arm specific variables
-FRACTION_COORDS_PATH = "../scripts/test_coords_20052022.pickle" # path to numpy array of coordinates
+# FRACTION_COORDS_PATH - path to numpy array of coordinates
+FRACTION_COORDS_PATH = "../scripts/test_coords_20052022.pickle" 
 ARM1_LENGTH = 86.
 ARM2_LENGTH = 55.
 MOTOR1_TYPE = 'NEMA17'
