@@ -2,9 +2,10 @@ numpy
 pandas
 python-dotenv
 nanpy
-#matplotlib
+# matplotlib
 jupyterlab
 dash
+dash_bootstrap_components
 jupyter-dash
 jupyterlab-dash
 # keras
