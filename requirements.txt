@@ -7,7 +7,7 @@ jupyterlab
 dash
 jupyter-dash
 jupyterlab-dash
-keras
-keras_tqdm
-tensorflow
-sklearn
+# keras
+# keras_tqdm
+# tensorflow
+# sklearn
