@@ -3,7 +3,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 
-root = 'G:\\PC_files\\ANU\\22S2\\COMP8715\\dataset\\dataset\\'
+root = 'G:\\PC_files\\ANU\\22S2\\COMP8715\\techlauncher\\opencv_method\\'
 
 def scharr(img):
     scharrx = cv2.Scharr(img, cv2.CV_64F, 1, 0)

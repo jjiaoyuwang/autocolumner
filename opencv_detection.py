@@ -2,7 +2,7 @@ import cv2
 import os
 
 faceCascade = cv2.CascadeClassifier("haarcascade_eye.xml")  #  haarcascade_frontalface_default.xml
-root = 'G:\\PC_files\\ANU\\22S2\\COMP8715\\dataset\\gradient_output\\'
+root = 'G:\\PC_files\\ANU\\22S2\\COMP8715\\techlauncher\\opencv_method\\gradient_output\\'
 filename = os.listdir(root)
 
 for file in filename:
