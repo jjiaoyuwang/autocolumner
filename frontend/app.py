@@ -56,4 +56,8 @@ def displayClick(btn1,btn2,btn3, btn4,btn5,btn6):
     return html.Div(msg)
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8050)
+    # run server with only internal connections allowed
+    # app.run_server(debug=True, port=8050)
+
+    # run server with external connections allowed
+    app.run_server(host="0.0.0.0", debug=True, port=8050)
