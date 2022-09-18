@@ -136,10 +136,7 @@ if __name__ == '__main__':
     f = os.listdir(dirPath)
     # f = ['dataset_perspective_transformed/002.png']
     for fileName in f:
-
         im, gray = read(dirPath+fileName)
-
-
         objective_lines = hough_line(gray)
         points = get_points(objective_lines)
         for pt1, pt2 in points:

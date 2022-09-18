@@ -10,12 +10,14 @@ import findLine as fl
 
 
 def read(filename):
+    """read gray scale image"""
     im = cv.imread(filename)
     gray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
     return im, gray
 
 
 def denoise(src, blur=3):
+    """denoise process: median blur + histogram equalise + opening"""
     blur = cv.medianBlur(src, blur)
     clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     cl = clahe.apply(blur)
@@ -25,6 +27,7 @@ def denoise(src, blur=3):
 
 
 def binarize(src, blur=3):
+    """Gaussian thresholding: cvt to binary and eliminate noise points on binary im"""
     th = cv.adaptiveThreshold(src, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
     dst = cv.medianBlur(th, blur)
     dst_invert = cv.bitwise_not(dst)
@@ -33,7 +36,9 @@ def binarize(src, blur=3):
 
 
 def fit_circle(cnt):
+    """find the circle that best fit the points on contour"""
     def off_bound(circle):
+        """boundary test"""
         cx, cy, r = circle
         if r < e_radius * min(w, h):
             return True
@@ -44,22 +49,23 @@ def fit_circle(cnt):
         return False
 
     def dist(c):
+        """array of distances from the points on contour to the centre of the fitted circle"""
         cx, cy = c
         return np.sqrt(np.power(x - cx, 2) + np.power(y - cy, 2))
 
     def f(c):
+        """objective function"""
         d = dist(c)
         r = np.mean(d)
         return d - r
 
-    P = cnt.squeeze()
+    P = cnt.squeeze()  # opencv is weired on this data structure, always squeeze a contour before apply operations
     x, y = P.T
-    c = np.mean(P, axis=0)
+    c = np.mean(P, axis=0)  # initial center by taking average
 
-    output = optimize.leastsq(f, c)
-    cx, cy = output[0]
-    # print(center)
-    r = np.mean(dist((cx, cy)))
+    output = optimize.leastsq(f, c)  # least-square to approximate null space
+    cx, cy = output[0]  # get centre of the fitted circle
+    r = np.mean(dist((cx, cy)))  # calc radius
     circle = cx, cy, r
     if off_bound(circle):
         return None
@@ -68,11 +74,11 @@ def fit_circle(cnt):
 
 
 def opt(contours):
+    """remove some small arcs"""
     ratio = []
     circles = []
     counter = 0
     for i, cnt in enumerate(contours):
-
         circle = fit_circle(cnt)
         circles.append(circle)
         M = cv.moments(cnt)
@@ -84,8 +90,8 @@ def opt(contours):
             c_x = int(M['m10'] / M['m00'])
             c_y = int(M['m01'] / M['m00'])
             centroid = np.array([c_x, c_y])
-            L2 = la.norm(centroid - center)
-            ratio.append(L2 / r)
+            L2 = la.norm(centroid - center)  # dist from centre of the fitted circle to the centroid of contour
+            ratio.append(L2 / r)  # calc ratio L2/R, the smaller the arc the larger the ratio
         else:
             ratio.append(-1)
 
@@ -98,6 +104,7 @@ def opt(contours):
 
 
 def contour(f):
+    """main func"""
     for filename in f:
         global gray, h, w
         im, gray = read(dirPath + filename)
@@ -152,19 +159,20 @@ def contour(f):
 
 
 def thresholding(contours):
+    """for rounding rects, we prefer large and square"""
     cntArea = [cv.contourArea(cnt) for cnt in contours]
     th = e_area ** 2 * (w * h)
-    largeContours = [contours[i] for i in range(len(cntArea)) if cntArea[i] > th]
+    largeContours = [contours[i] for i in range(len(cntArea)) if cntArea[i] > th]  # get large enough contours
     if len(largeContours) < 2:
         return None
     rect = [cv.minAreaRect(cnt) for cnt in largeContours]
     S = np.array([r[1] for r in rect])
-    ratio = np.max(S, axis=1) / np.min(S, axis=1)
-    rectArea = -S[:, 0] * S[:, 1]
-    scaledRatio = (ratio - np.min(ratio)) / (np.max(ratio) - np.min(ratio))
-    scaledArea = (rectArea - np.min(rectArea)) / (np.max(rectArea) - np.min(rectArea))
+    ratio = np.max(S, axis=1) / np.min(S, axis=1)  # measure how likely the rect to be a square
+    rectArea = -S[:, 0] * S[:, 1]  # measure how large the rect is
+    scaledRatio = (ratio - np.min(ratio)) / (np.max(ratio) - np.min(ratio))  # normalize ratio
+    scaledArea = (rectArea - np.min(rectArea)) / (np.max(rectArea) - np.min(rectArea))  # normalize area
 
-    loss = scaledArea + e_ratio * scaledRatio
+    loss = scaledArea + e_ratio * scaledRatio  # compare to large, square is less important
     bar = np.quantile(loss, q=e_bar)
     indices = np.argwhere(loss < bar).squeeze().astype(int)
 
@@ -172,6 +180,7 @@ def thresholding(contours):
 
 
 def over_line(c, cnt=None):
+    """remove contours which are too close to the boundaries or even exceed the boundaries"""
     if cnt is not None:
         cnt = cnt.squeeze()
     r = 0
