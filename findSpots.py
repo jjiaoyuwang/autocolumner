@@ -223,11 +223,12 @@ def valid(contours):
 
 if __name__ == '__main__':
     # hyper parameters
-    e_radius = 1e-2
-    e_area = 1e-2
-    e_ratio = 0.5
-    e_bar = 0.9
-    e_bound = 2e-2
+    e_radius = 1e-2  # minimum(r/min(w,h)) r is the radius of the circle
+    e_area = 1e-2  # minimum area of a contour = (e_area*w) * (e_area*h)
+    e_ratio = 0.5  # the balance factor between scaledArea nad scaledRatio (scaledRatio is less dominant)
+    e_bar = 0.9  # we view the last 10% are noise and eliminate them
+    e_bound = 2e-2  # All points within e_bound*h from the upper and lower bounds are noise
+                    # all points within 2*e_bound*w from the left and right bounds are noise
 
     dirPath = 'dataset_perspective_transformed/'
     f = os.listdir(dirPath)
