@@ -6,6 +6,10 @@ import dash_bootstrap_components as dbc
 import dash_daq as daq
 import datetime
 import time
+import pump
+import vacuum_hardware
+import sepfunnel
+import arm
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash('test_app', external_stylesheets=external_stylesheets)
@@ -18,7 +22,13 @@ arm_pos=0;
 pump1=False;
 pump2=False;
 vacuum=False;
-seq_funnel=False;
+sep_funnel=False;
+
+hardware_pump1=pump.Pump("1");
+hardware_pump2=pump.Pump("2");
+hardware_vacuum=vacuum_hardware.Vacuum("3");
+hardware_sep=sepfunnel.Sepfunnel("4");
+hardware_arm=arm.Arm("5");
 
 data_fraction=6;
 message_fraction="Fraction:"+str(data_fraction)+"/10";
@@ -26,8 +36,7 @@ message_fraction="Fraction:"+str(data_fraction)+"/10";
 timecal=0.0;
 timing_message="Time:"+str(timecal);
 
-button_buttom={
-}
+button_buttom={}
 tab3_switch={}
 
 app.layout = html.Div([
@@ -56,7 +65,7 @@ app.layout = html.Div([
             daq.BooleanSwitch(id='pump1',on=False,label='pump1',style=tab3_switch),
             daq.BooleanSwitch(id='pump2',on=False,label='pump2',style=tab3_switch),
             daq.BooleanSwitch(id='vacuum',on=False,label='vacuum',style=tab3_switch),
-            daq.BooleanSwitch(id='seq_funnel',on=False,label='sep_funnel',style=tab3_switch),
+            daq.BooleanSwitch(id='sep_funnel',on=False,label='sep_funnel',style=tab3_switch),
             html.Div(id='one'),
             html.Div(id='two'),
             html.Div(id='three'),
@@ -66,6 +75,7 @@ app.layout = html.Div([
             html.Button('<', id='smaller', n_clicks=0),
             html.Button('>', id='bigger', n_clicks=0),
             html.Button('>|', id='biggest', n_clicks=0),
+            html.Div(id='testhardware'),
         ])
         ),
         dcc.Tab(id='tlc',label='TLC', value='tlc'
@@ -121,7 +131,7 @@ def updatetiming(on,btn1,btn2):
     Output('pump1','on'),
 ##    Output('pump2','on'),
 ##    Output('vacuum','on'),
-##    Output('seq_funnel','on'),
+##    Output('sep_funnel','on'),
     Input('stop-click','n_clicks'),
     Input('pause-click','n_clicks')
 )
@@ -139,7 +149,7 @@ def stop(btn1,btn2):
 @app.callback(
     Output('pump2','on'),
 ##    Output('vacuum','on'),
-##    Output('seq_funnel','on'),
+##    Output('sep_funnel','on'),
     Input('stop-click','n_clicks'),
     Input('pause-click','n_clicks')
 )
@@ -152,7 +162,7 @@ def stop(btn1,btn2):
 
 @app.callback(
     Output('vacuum','on'),
-##    Output('seq_funnel','on'),
+##    Output('sep_funnel','on'),
     Input('stop-click','n_clicks'),
     Input('pause-click','n_clicks')
 )
@@ -164,15 +174,15 @@ def stop(btn1,btn2):
         on=False;
 
 @app.callback(
-    Output('seq_funnel','on'),
+    Output('sep_funnel','on'),
     Input('stop-click','n_clicks'),
     Input('pause-click','n_clicks')
 )
 
 def stop(btn1,btn2):
-    global seq_funnel;
+    global sep_funnel;
     if "stop-click"==ctx.triggered_id or "pause-click"==ctx.triggered_id:
-        seq_funnel=False;
+        sep_funnel=False;
         on=False;
 
 ##tab debug
@@ -185,10 +195,13 @@ def pump1run(on):
     global pump1;
     if on is True:
         pump1=True;
+        print(hardware_pump1.on());
     elif on is False:
         pump1=False;
-    msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',seq funnel is '+str(seq_funnel);
-    print(msg); 
+        print(hardware_pump1.off());
+    msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',sep funnel is '+str(sep_funnel);
+    print(msg);
+
 
 @app.callback(
     Output('two','children'),
@@ -199,9 +212,11 @@ def pump2run(on):
     global pump2;
     if on is True:
         pump2=True;
+        print(hardware_pump2.on());
     elif on is False:
         pump2=False;
-    msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',seq funnel is '+str(seq_funnel);
+        print(hardware_pump2.off());
+    msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',sep funnel is '+str(sep_funnel);
     print(msg); 
 
 @app.callback(
@@ -213,23 +228,27 @@ def vacuumrun(on):
     global vacuum;
     if on is True:
         vacuum=True;
+        print(hardware_vacuum.on());
     elif on is False:
         vacuum=False;
-    msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',seq funnel is '+str(seq_funnel);
+        print(hardware_vacuum.off());
+    msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',sep funnel is '+str(sep_funnel);
     print(msg); 
 
 @app.callback(
     Output('four','children'),
-    Input('seq_funnel','on'),
+    Input('sep_funnel','on'),
 )
 
-def seqfunnelrun(on):
-    global seq_funnel;
+def sepfunnelrun(on):
+    global sep_funnel;
     if on is True:
-        seq_funnel=True;
+        sep_funnel=True;
+        print(hardware_sep.on());
     elif on is False:
-        seq_funnel=False;
-    msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',seq funnel is '+str(seq_funnel);
+        sep_funnel=False;
+        print(hardware_sep.off())
+    msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',sep funnel is '+str(sep_funnel);
     print(msg); 
 
 @app.callback(
@@ -244,14 +263,19 @@ def seqfunnelrun(on):
 def arm_run(btn1,btn2,btn3,btn4):
     global arm_pos;
     if "smallest" == ctx.triggered_id:
-        arm_pos=0;
+        print(hardware_arm.tomin());
+        arm_pos=0;##this can be delete if use arm.py
     elif "smaller"== ctx.triggered_id and arm_pos>0:
-        arm_pos=arm_pos-1;
+        print(hardware_arm.smaller());
+        arm_pos=arm_pos-1;##this can be delete if use arm.py
     elif "bigger"==ctx.triggered_id and arm_pos<10:
-        arm_pos=arm_pos+1;
+        print(hardware_arm.bigger());
+        arm_pos=arm_pos+1;##this can be delete if use arm.py
     elif "biggest"==ctx.triggered_id:
-        arm_pos=10;
-    msg='arm at #'+str(arm_pos);
+        print(hardware_arm.tomax());
+        arm_pos=10;##this can be delete if use arm.py
+    ##msg='arm at #'+str(arm_pos);
+    msg='arm at #'+str(hardware_arm.position);
     return html.Div(msg);
 
 ##if __name__ == '__main__':
