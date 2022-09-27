@@ -1,6 +1,6 @@
 from email import message
 from gc import callbacks
-from tkinter.ttk import Style
+# from tkinter.ttk import Style
 from dash import Dash, html, dcc, Input, Output, ctx, State
 import dash_bootstrap_components as dbc
 import dash_daq as daq
@@ -15,6 +15,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash('test_app', external_stylesheets=external_stylesheets)
 #app.config.suppress_callback_exceptions = True
 
+# Variables for tracking machine state
 start=0;
 start_machine=False;
 switch_start=0;
@@ -133,9 +134,7 @@ def updatetiming(on,btn1,btn2):
 ##    Output('vacuum','on'),
 ##    Output('sep_funnel','on'),
     Input('stop-click','n_clicks'),
-    Input('pause-click','n_clicks')
-)
-
+    Input('pause-click','n_clicks'))
 def stop(btn1,btn2):
     global pump1;
     global start_machine;
@@ -151,9 +150,7 @@ def stop(btn1,btn2):
 ##    Output('vacuum','on'),
 ##    Output('sep_funnel','on'),
     Input('stop-click','n_clicks'),
-    Input('pause-click','n_clicks')
-)
-
+    Input('pause-click','n_clicks'))
 def stop(btn1,btn2):
     global pump2;
     if "stop-click"==ctx.triggered_id or "pause-click"==ctx.triggered_id:
@@ -164,9 +161,7 @@ def stop(btn1,btn2):
     Output('vacuum','on'),
 ##    Output('sep_funnel','on'),
     Input('stop-click','n_clicks'),
-    Input('pause-click','n_clicks')
-)
-
+    Input('pause-click','n_clicks'))
 def stop(btn1,btn2):
     global vacuum;
     if "stop-click"==ctx.triggered_id or "pause-click"==ctx.triggered_id:
@@ -176,9 +171,7 @@ def stop(btn1,btn2):
 @app.callback(
     Output('sep_funnel','on'),
     Input('stop-click','n_clicks'),
-    Input('pause-click','n_clicks')
-)
-
+    Input('pause-click','n_clicks'))
 def stop(btn1,btn2):
     global sep_funnel;
     if "stop-click"==ctx.triggered_id or "pause-click"==ctx.triggered_id:
@@ -205,9 +198,7 @@ def pump1run(on):
 
 @app.callback(
     Output('two','children'),
-    Input('pump2','on'),
-)
-
+    Input('pump2','on'),)
 def pump2run(on):
     global pump2;
     if on is True:
@@ -221,9 +212,7 @@ def pump2run(on):
 
 @app.callback(
     Output('three','children'),
-    Input('vacuum','on'),
-)
-
+    Input('vacuum','on'),)
 def vacuumrun(on):
     global vacuum;
     if on is True:
@@ -237,9 +226,7 @@ def vacuumrun(on):
 
 @app.callback(
     Output('four','children'),
-    Input('sep_funnel','on'),
-)
-
+    Input('sep_funnel','on'),)
 def sepfunnelrun(on):
     global sep_funnel;
     if on is True:
@@ -256,10 +243,7 @@ def sepfunnelrun(on):
     Input('smallest','n_clicks'),
     Input('smaller', 'n_clicks'),
     Input('bigger', 'n_clicks'),
-    Input('biggest', 'n_clicks'),
-)
-
-
+    Input('biggest', 'n_clicks'),)
 def arm_run(btn1,btn2,btn3,btn4):
     global arm_pos;
     if "smallest" == ctx.triggered_id:
@@ -283,7 +267,7 @@ def arm_run(btn1,btn2,btn3,btn4):
 
 if __name__ == '__main__':
     # run server with only internal connections allowed
-    # app.run_server(debug=True, port=8050)
+    app.run_server(debug=True, port=8050)
 
     # run server with external connections allowed
-    app.run_server(host="0.0.0.0", debug=True, port=8050)
+    # app.run_server(host="0.0.0.0", debug=True, port=8050)
