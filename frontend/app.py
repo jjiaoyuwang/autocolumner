@@ -1,5 +1,6 @@
 from email import message
 from gc import callbacks
+from turtle import position
 # from tkinter.ttk import Style
 from dash import Dash, html, dcc, Input, Output, ctx, State
 import dash_bootstrap_components as dbc
@@ -20,6 +21,8 @@ start=0;
 start_machine=False;
 switch_start=0;
 arm_pos=0;
+Min_armpos=0;##the min of arm position
+Max_armpos=10;##the max of arm position
 pump1=False;
 pump2=False;
 vacuum=False;
@@ -244,18 +247,20 @@ def sepfunnelrun(on):
     Input('biggest', 'n_clicks'),)
 def arm_run(btn1,btn2,btn3,btn4):
     global arm_pos;
+    global Min_armpos;
+    global Max_armpos;
     if "smallest" == ctx.triggered_id:
         print(hardware_arm.tomin());
-        arm_pos=0;##this can be delete if use arm.py
-    elif "smaller"== ctx.triggered_id and arm_pos>0:
+        arm_pos=Min_armpos;##this can be delete if use arm.py
+    elif "smaller"== ctx.triggered_id and arm_pos>Min_armpos:
         print(hardware_arm.smaller());
         arm_pos=arm_pos-1;##this can be delete if use arm.py
-    elif "bigger"==ctx.triggered_id and arm_pos<10:
+    elif "bigger"==ctx.triggered_id and arm_pos<Max_armpos:
         print(hardware_arm.bigger());
         arm_pos=arm_pos+1;##this can be delete if use arm.py
     elif "biggest"==ctx.triggered_id:
         print(hardware_arm.tomax());
-        arm_pos=10;##this can be delete if use arm.py
+        arm_pos=Max_armpos;##this can be delete if use arm.py
     ##msg='arm at #'+str(arm_pos);
     msg='arm at #'+str(hardware_arm.position);
     return html.Div(msg);
