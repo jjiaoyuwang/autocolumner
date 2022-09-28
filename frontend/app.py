@@ -16,7 +16,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash('test_app', external_stylesheets=external_stylesheets)
 #app.config.suppress_callback_exceptions = True
 
-# Variables for tracking machine state
+# Variables for tracking machine state ---------------------------
 start=0;
 start_machine=False;
 switch_start=0;
@@ -27,6 +27,7 @@ pump1=False;
 pump2=False;
 vacuum=False;
 sep_funnel=False;
+#---------------------------------------------------------------
 
 hardware_pump1=pump.Pump("1");
 hardware_pump2=pump.Pump("2");
@@ -44,11 +45,9 @@ button_buttom={}
 tab3_switch={}
 
 app.layout = html.Div([
-    dcc.Tabs(id='sample', value='setup', mobile_breakpoint=0, children=[
+    dcc.Tabs(id='Main_Tabs', value='setup', mobile_breakpoint=0, children=[
         dcc.Tab(id='setup', label='setup', value='setup', children=html.Div([
             html.H2('Fractions'),
-##This is the code of switch button of Start
-##            daq.BooleanSwitch(id='open', on=False, label="Start",labelPosition="bottom",style=button_buttom)
             html.Button('start',id='startclick',n_clicks=0),
         ])),
         dcc.Tab(id='monitor',label='monitor', value='monitor',children=html.Div([
@@ -87,25 +86,28 @@ app.layout = html.Div([
     ])
 ])
 
-##tab setup
-##This is the code of switch button of start
-##@app.callback(Output('sample','value'),Input('open','on'))
-##def start_tab(on):
-##    if on is True:
-##        return 'monitor';
-##    else:
-##        return 'setup';
-@app.callback(Output('sample','value'),Input('startclick','n_clicks'))
+# Setup Tab Callbacks ------------------------------
+
+# Run Button
+@app.callback(Output('Main_Tabs','value'),Input('startclick','n_clicks'))
 def start_tab(btn1):
     global start_machine;
     if "startclick"== ctx.triggered_id and start_machine==False:
         start_machine=True;
         return 'monitor';
 
-##tab monitor
+# --------------------------------------------------
+
+
+# Monitor Tab Callbacks ----------------------------
+
+# update time elapsed
+    # (todo: look into better ways of doing the time display. current way is laggy)
+    # implementation idea:
+    # local timer for display, with the server running its own serverside timer.
+    # sync the timers every few minutes, and when pausing/resuming.
 @app.callback(
     Output('messageoftime','children'),
-##    Input('open','on'),
     Input('pause-click','n_clicks'),
     Input('stop-click','n_clicks'),
     Input('interval-component', 'n_intervals'),
@@ -126,16 +128,21 @@ def updatetiming(on,btn1,btn2):
         timecal=temp_time;
         timing_message="Time:"+str(timecal);
     return timing_message;
-   ##     return html.Div(msg);
-   ## else:
-   ##     msg='Time:'
-   ##     return html.Div(msg);
 
+# update current fraction #
+    # (maybe implement as a function to call from the backend)
+
+# update current volume dispensed display
+    # (again, a functiont to call from the backend)
+
+# stop the run when STOP button pressed
+    # close all peripherals
+    # stop arm movement
+    # reset time
+    # reset volume
+    # change pause button to RUN button
 @app.callback(
     Output('pump1','on'),
-##    Output('pump2','on'),
-##    Output('vacuum','on'),
-##    Output('sep_funnel','on'),
     Input('stop-click','n_clicks'),
     Input('pause-click','n_clicks'))
 def stop(btn1,btn2):
@@ -147,39 +154,27 @@ def stop(btn1,btn2):
         switch_start=0;
         pump1=False;
         on=False;
+    return pump1;
 
-@app.callback(
-    Output('pump2','on'),
-##    Output('vacuum','on'),
-##    Output('sep_funnel','on'),
-    Input('stop-click','n_clicks'),
-    Input('pause-click','n_clicks'))
-def stop(btn1,btn2):
-    global pump2;
-    if "stop-click"==ctx.triggered_id or "pause-click"==ctx.triggered_id:
-        pump2=False;
-        on=False;
+# pause the run when PAUSE button pressed
+    # stop arm movement
+    # close all peripherals
+    # pause time
+    # pause volume
+    # pause fraction number
+    # change pause button to RESUME button
+# resume the run when RESUME button pressed
+    # complete arm movement
+    # open relevant peripherals
+    # unpause time
+    # unpause volume
+    # unpause fraction number
+    # change resume button to PAUSE button (perhaps implement as 2 buttons that hide when unavailable?)
+# currently not having pause/resume button change to be a RUN button.
+# we can implement that in the future if requested.
 
-@app.callback(
-    Output('vacuum','on'),
-##    Output('sep_funnel','on'),
-    Input('stop-click','n_clicks'),
-    Input('pause-click','n_clicks'))
-def stop(btn1,btn2):
-    global vacuum;
-    if "stop-click"==ctx.triggered_id or "pause-click"==ctx.triggered_id:
-        vacuum=False;
-        on=False;
 
-@app.callback(
-    Output('sep_funnel','on'),
-    Input('stop-click','n_clicks'),
-    Input('pause-click','n_clicks'))
-def stop(btn1,btn2):
-    global sep_funnel;
-    if "stop-click"==ctx.triggered_id or "pause-click"==ctx.triggered_id:
-        sep_funnel=False;
-        on=False;
+# ----------------------------------------------------------
 
 ##tab debug
 @app.callback(
