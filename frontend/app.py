@@ -41,8 +41,8 @@ button_buttom={}
 tab3_switch={}
 
 app.layout = html.Div([
-    dcc.Tabs(id='sample', value='tab-1', children=[
-        dcc.Tab(id='setup', label='set up', value='setup', children=html.Div([
+    dcc.Tabs(id='sample', value='setup', children=[
+        dcc.Tab(id='setup', label='setup', value='setup', children=html.Div([
             html.H2('Fractions'),
 ##This is the code of switch button of Start
 ##            daq.BooleanSwitch(id='open', on=False, label="Start",labelPosition="bottom",style=button_buttom)
@@ -84,7 +84,7 @@ app.layout = html.Div([
     ])
 ])
 
-##tab set up
+##tab setup
 ##This is the code of switch button of start
 ##@app.callback(Output('sample','value'),Input('open','on'))
 ##def start_tab(on):
@@ -181,9 +181,7 @@ def stop(btn1,btn2):
 ##tab debug
 @app.callback(
     Output('one','children'),
-    Input('pump1','on'),
-)
-
+    Input('pump1','on'),)
 def pump1run(on):
     global pump1;
     if on is True:
@@ -261,9 +259,6 @@ def arm_run(btn1,btn2,btn3,btn4):
     ##msg='arm at #'+str(arm_pos);
     msg='arm at #'+str(hardware_arm.position);
     return html.Div(msg);
-
-##if __name__ == '__main__':
-##    app.run_server(debug=True, port=8050)
 
 if __name__ == '__main__':
     # run server with only internal connections allowed
