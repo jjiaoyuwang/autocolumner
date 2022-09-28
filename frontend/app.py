@@ -41,7 +41,7 @@ button_buttom={}
 tab3_switch={}
 
 app.layout = html.Div([
-    dcc.Tabs(id='sample', value='setup', children=[
+    dcc.Tabs(id='sample', value='setup', mobile_breakpoint=0, children=[
         dcc.Tab(id='setup', label='setup', value='setup', children=html.Div([
             html.H2('Fractions'),
 ##This is the code of switch button of Start
