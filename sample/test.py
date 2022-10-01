@@ -171,12 +171,11 @@ def main():
         a = ArduinoApi(connection=connection)
         print("Connection successful")
     except Exception as e:
-        print(e)
-    
+        print(e)    
 
-    #jog_servo(a)
+    jog_servo(a)
 
-    #jog_pumps(a)
+    jog_pumps(a)
 
     jog_arm(connection, a)
 

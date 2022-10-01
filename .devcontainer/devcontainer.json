@@ -35,7 +35,7 @@
 	"extensions": [
 		"ms-python.python"
     ],
-    // "runArgs": ["--device=/dev/ttyACM0"],
+    "runArgs": ["--device=/dev/ttyACM0"],
     // Uncomment the above line if running with hardware (i.e. arduino connected). Otherwise vscode/docker throws an exception. Later on, if dynamic runArgs becomes a feature, I need to modify this for two situations a) software only development b) hardware+software development.
     // see https://github.com/microsoft/vscode-remote-release/issues/3972
 
