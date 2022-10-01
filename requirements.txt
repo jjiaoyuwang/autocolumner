@@ -12,3 +12,4 @@ jupyterlab-dash
 # keras_tqdm
 # tensorflow
 # sklearn
+dash_daq
