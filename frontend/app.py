@@ -66,7 +66,7 @@ app.layout = html.Div([
             daq.BooleanSwitch(id='pump2',on=False,label='pump2',style=tab3_switch),
             daq.BooleanSwitch(id='vacuum',on=False,label='vacuum',style=tab3_switch),
             daq.BooleanSwitch(id='sep_funnel',on=False,label='sep_funnel',style=tab3_switch),
-            html.Div(id='one'),
+            html.Div(id='one'),#the 'one' to 'four' have no use, just because every callback need a output
             html.Div(id='two'),
             html.Div(id='three'),
             html.Div(id='four'),
@@ -267,7 +267,7 @@ def arm_run(btn1,btn2,btn3,btn4):
     global arm_pos;
     global Min_armpos;
     global Max_armpos;
-    if "smallest" == ctx.triggered_id:
+    if "smallest" == ctx.triggered_id:# turn the arm to the min position
         print(hardware_arm.tomin());
         arm_pos=Min_armpos;##this can be delete if use arm.py
     elif "smaller"== ctx.triggered_id and arm_pos>Min_armpos:
@@ -276,7 +276,7 @@ def arm_run(btn1,btn2,btn3,btn4):
     elif "bigger"==ctx.triggered_id and arm_pos<Max_armpos:
         print(hardware_arm.bigger());
         arm_pos=arm_pos+1;##this can be delete if use arm.py
-    elif "biggest"==ctx.triggered_id:
+    elif "biggest"==ctx.triggered_id:#turn the arm to the max position
         print(hardware_arm.tomax());
         arm_pos=Max_armpos;##this can be delete if use arm.py
     ##msg='arm at #'+str(arm_pos);
