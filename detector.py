@@ -177,6 +177,7 @@ def assign_kp(C: list, KP: np.ndarray):
 
 
 if __name__ == '__main__':
+    # use detector instead of findspots
     path = 'dataset_perspective_transformed/'
     files = os.listdir(path)
     for f in files:
