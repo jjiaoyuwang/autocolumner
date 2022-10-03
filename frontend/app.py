@@ -39,6 +39,7 @@ data_fraction=6;
 message_fraction="Fraction:"+str(data_fraction)+"/10";
 
 timing_message="Time: 00:00:00";
+volume_str="Volume: 0/0 mL";
 
 button_buttom={}
 tab3_switch={}
@@ -50,10 +51,10 @@ app.layout = html.Div([
             html.Button('start',id='startclick',n_clicks=0),
         ])),
         dcc.Tab(id='monitor',label='Monitor', value='monitor',children=html.Div([
-            dcc.Interval(id='interval1', interval=0.5* 1000, n_intervals=0),
             html.H2(id='Fraction ratio'),
             dcc.Markdown(f'''{message_fraction}''',id="messageoffraction"),
             dcc.Markdown(f'''{timing_message}''',id="messageoftime"),
+            dcc.Markdown(f'''{volume_str}''',id="volume_display"),
             html.H2(id='timing'),
             html.Button('Pause', id='pause-click', n_clicks=0),
             html.Button('Stop', id='stop-click', n_clicks=0),
@@ -129,12 +130,33 @@ def updatetiming(on):
         timing_message = "Time: " + cur_time;
     return timing_message;
 
-# update current fraction #
-    # (maybe implement as a function to call from the backend)
+# update current fraction display
+    # IMPORTANT: you cannot call a  function to update the display
+    # you need to change the global variable 'arm_pos'
+    # and this will update the display to match next time the timer changes
+@app.callback(
+    Output("messageoffraction", "children"),
+    Input('interval-component', 'n_intervals')
+    )
+def update_fraction_display(on):
+    global arm_pos;
+    cur_f_str = "Fraction: {:0}/{:1}".format(arm_pos, Max_armpos)
+    return cur_f_str;
 
 # update current volume dispensed display
     # (again, a functiont to call from the backend)
-
+@app.callback(
+    Output("volume_display", "children"),
+    Input('interval-component', 'n_intervals')
+    )
+def update_volume_display(on):
+    global arm_pos;
+    # todo: calculate current volume and final volume
+    # using arm_pos, and sequence parameters
+    placeholder_vol = 10;
+    placeholder_max_vol = 100;
+    cur_v_str = "Volume Dispensed: {:0}/{:1} mL".format(placeholder_vol, placeholder_max_vol)
+    return cur_v_str;
 
 # stop the run when STOP button pressed
     # close all peripherals
