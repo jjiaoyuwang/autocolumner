@@ -17,7 +17,7 @@ app = Dash('test_app', external_stylesheets=external_stylesheets)
 #app.config.suppress_callback_exceptions = True
 
 # Variables for tracking machine state ---------------------------
-start=0;
+start_time=time.time()
 start_machine=False;
 switch_start=0;
 arm_pos=0;
@@ -38,19 +38,18 @@ hardware_arm=arm.Arm("5");
 data_fraction=6;
 message_fraction="Fraction:"+str(data_fraction)+"/10";
 
-timecal=0.0;
-timing_message="Time:"+str(timecal);
+timing_message="Time: 00:00:00";
 
 button_buttom={}
 tab3_switch={}
 
 app.layout = html.Div([
     dcc.Tabs(id='Main_Tabs', value='setup', mobile_breakpoint=0, children=[
-        dcc.Tab(id='setup', label='setup', value='setup', children=html.Div([
+        dcc.Tab(id='setup', label='Setup', value='setup', children=html.Div([
             html.H2('Fractions'),
             html.Button('start',id='startclick',n_clicks=0),
         ])),
-        dcc.Tab(id='monitor',label='monitor', value='monitor',children=html.Div([
+        dcc.Tab(id='monitor',label='Monitor', value='monitor',children=html.Div([
             dcc.Interval(id='interval1', interval=0.5* 1000, n_intervals=0),
             html.H2(id='Fraction ratio'),
             dcc.Markdown(f'''{message_fraction}''',id="messageoffraction"),
@@ -64,7 +63,7 @@ app.layout = html.Div([
             n_intervals=0)
         ])
         ),
-        dcc.Tab(id='debug',label='debug', value='debug',children=html.Div([
+        dcc.Tab(id='debug',label='Debug', value='debug',children=html.Div([
             daq.BooleanSwitch(id='pump1',on=False,label='pump1',style=tab3_switch),
             daq.BooleanSwitch(id='pump2',on=False,label='pump2',style=tab3_switch),
             daq.BooleanSwitch(id='vacuum',on=False,label='vacuum',style=tab3_switch),
@@ -98,8 +97,11 @@ def start_tab(btn1,cur_tab):
     global start_machine;
     if "startclick"== ctx.triggered_id and start_machine==False:
         start_machine=True;
+        state_time = time.time();
         return 'monitor';
     else:
+        # this part of the callback is so that
+        # periodic callback refreshing doesn't change tabs
         return cur_tab;
 
 # --------------------------------------------------
@@ -108,31 +110,23 @@ def start_tab(btn1,cur_tab):
 # Monitor Tab Callbacks ----------------------------
 
 # update time elapsed
-    # (todo: look into better ways of doing the time display. current way is laggy)
-    # implementation idea:
-    # local timer for display, with the server running its own serverside timer.
-    # sync the timers every few minutes, and when pausing/resuming.
+    # todo: change to using a clientside callback for performance
+    # make sure to sync the client's displayed time with the serverside time every couple minutes.
 @app.callback(
     Output('messageoftime','children'),
-    Input('pause-click','n_clicks'),
-    Input('stop-click','n_clicks'),
     Input('interval-component', 'n_intervals'),
+    # todo: make it update when Monitor tab is selected
     )
-def updatetiming(on,btn1,btn2):
-    global start;
+def updatetiming(on):
+    global start_time;
+    global start_machine;
     global switch_start;
-    global timecal;
+    # not sure timing_message needs to be global
     global timing_message;
-    if start_machine==True and switch_start==0:
-        starttime = time.time()
-        start=starttime;
-        switch_start=1;
-    if(start!=0 and start_machine==True):
-        print(time.time()-start);
-        temp_time=round(time.time()-start,2);
-        msg='Time:'+str(temp_time);
-        timecal=temp_time;
-        timing_message="Time:"+str(timecal);
+    if start_machine==True:
+        cur_time = time.gmtime(time.time() - start_time);
+        cur_time = time.strftime("%H:%M:%S",cur_time)
+        timing_message = "Time: " + cur_time;
     return timing_message;
 
 # update current fraction #
@@ -140,6 +134,7 @@ def updatetiming(on,btn1,btn2):
 
 # update current volume dispensed display
     # (again, a functiont to call from the backend)
+
 
 # stop the run when STOP button pressed
     # close all peripherals
