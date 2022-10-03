@@ -18,8 +18,7 @@ app = Dash('test_app', external_stylesheets=external_stylesheets)
 
 # Variables for tracking machine state ---------------------------
 start_time=time.time()
-start_machine=False;
-switch_start=0;
+sequence_in_progress=False;
 arm_pos=0;
 Min_armpos=0;##the min of arm position
 Max_armpos=10;##the max of arm position
@@ -35,9 +34,7 @@ hardware_vacuum=vacuum_hardware.Vacuum("3");
 hardware_sep=sepfunnel.Sepfunnel("4");
 hardware_arm=arm.Arm("5");
 
-data_fraction=6;
-message_fraction="Fraction:"+str(data_fraction)+"/10";
-
+message_fraction= "Fraction: {:0}/{:1}".format(0, 0);
 timing_message="Time: 00:00:00";
 volume_str="Volume: 0/0 mL";
 
@@ -56,8 +53,8 @@ app.layout = html.Div([
             dcc.Markdown(f'''{timing_message}''',id="messageoftime"),
             dcc.Markdown(f'''{volume_str}''',id="volume_display"),
             html.H2(id='timing'),
-            html.Button('Pause', id='pause-click', n_clicks=0),
-            html.Button('Stop', id='stop-click', n_clicks=0),
+            html.Button('Pause', id='pause-click', n_clicks=0, disabled=True),
+            html.Button('Stop', id='stop-click', n_clicks=0, disabled=True),
             dcc.Interval(
             id='interval-component',
             interval=1*1000, # in milliseconds
@@ -95,13 +92,14 @@ app.layout = html.Div([
     State('Main_Tabs','value')
     )
 def start_tab(btn1,cur_tab):
-    global start_machine;
-    if "startclick"== ctx.triggered_id and start_machine==False:
-        start_machine=True;
-        state_time = time.time();
+    global sequence_in_progress;
+    global start_time;
+    if "startclick"== ctx.triggered_id and sequence_in_progress==False:
+        sequence_in_progress=True;
+        start_time = time.time();
         return 'monitor';
     else:
-        # this part of the callback is so that
+        # this part of the callback is so that Dash's
         # periodic callback refreshing doesn't change tabs
         return cur_tab;
 
@@ -120,11 +118,10 @@ def start_tab(btn1,cur_tab):
     )
 def updatetiming(on):
     global start_time;
-    global start_machine;
-    global switch_start;
+    global sequence_in_progress;
     # not sure timing_message needs to be global
     global timing_message;
-    if start_machine==True:
+    if sequence_in_progress==True:
         cur_time = time.gmtime(time.time() - start_time);
         cur_time = time.strftime("%H:%M:%S",cur_time)
         timing_message = "Time: " + cur_time;
@@ -140,8 +137,14 @@ def updatetiming(on):
     )
 def update_fraction_display(on):
     global arm_pos;
-    cur_f_str = "Fraction: {:0}/{:1}".format(arm_pos, Max_armpos)
+    if sequence_in_progress:
+        cur_f_str = get_cur_fraction_msg(arm_pos, Max_armpos);
+    else:
+        cur_f_str = get_cur_fraction_msg(0,0);
     return cur_f_str;
+
+def get_cur_fraction_msg(cur_fraction, last_fraction):
+    return "Fraction: {:0}/{:1}".format(cur_fraction, last_fraction);
 
 # update current volume dispensed display
     # (again, a functiont to call from the backend)
@@ -158,26 +161,23 @@ def update_volume_display(on):
     cur_v_str = "Volume Dispensed: {:0}/{:1} mL".format(placeholder_vol, placeholder_max_vol)
     return cur_v_str;
 
+# IMPORTANT: stop button and pause button functionality delayed until backside multithreading is implemented.
 # stop the run when STOP button pressed
     # close all peripherals
     # stop arm movement
     # reset time
     # reset volume
     # change pause button to RUN button
-@app.callback(
-    Output('pump1','on'),
-    Input('stop-click','n_clicks'),
-    Input('pause-click','n_clicks'))
-def stop(btn1,btn2):
-    global pump1;
-    global start_machine;
-    global switch_start;
-    if "stop-click"==ctx.triggered_id or "pause-click"==ctx.triggered_id:
-        start_machine=False;##stop machine
-        switch_start=0;
-        pump1=False;
-        on=False;
-    return pump1;
+#@app.callback(
+#    Output('stop-click','disabled'),
+#    Input('stop-click','n_clicks'),
+#    )
+#def stop(btn1):
+#    global sequence_in_progress;
+#    if "stop-click"==ctx.triggered_id:
+#        sequence_in_progress=False;
+#        return True;
+#    return False;
 
 # pause the run when PAUSE button pressed
     # stop arm movement
