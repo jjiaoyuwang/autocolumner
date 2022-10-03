@@ -89,12 +89,18 @@ app.layout = html.Div([
 # Setup Tab Callbacks ------------------------------
 
 # Run Button
-@app.callback(Output('Main_Tabs','value'),Input('startclick','n_clicks'))
-def start_tab(btn1):
+@app.callback(
+    Output('Main_Tabs','value'),
+    Input('startclick','n_clicks'),
+    State('Main_Tabs','value')
+    )
+def start_tab(btn1,cur_tab):
     global start_machine;
     if "startclick"== ctx.triggered_id and start_machine==False:
         start_machine=True;
         return 'monitor';
+    else:
+        return cur_tab;
 
 # --------------------------------------------------
 

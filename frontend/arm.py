@@ -1,3 +1,5 @@
+import time
+
 class Arm:
     def __init__(self,id):
         self.id=id;
@@ -7,6 +9,7 @@ class Arm:
     def smaller(self):
         if self.position>0:
             self.position=self.position-1;
+            time.sleep(0.5)
         return "the arm is at "+str(self.position);
     
 
