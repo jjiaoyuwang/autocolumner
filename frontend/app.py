@@ -24,11 +24,13 @@ start_time=time.time()
 sequence_in_progress=False;
 arm_pos=0;#the position of arm
 Min_armpos=0;##the min of arm position
-Max_armpos=10;##the max of arm position
+Max_armpos=10;##the max of arm position. todo: calculate from sequence parameters?
 pump1=False;
 pump2=False;
 vacuum=False;
 sep_funnel=False;
+sequence_volumes = [] 
+sequence_gradients = []
 #---------------------------------------------------------------
 
 hardware_pump1=pump.Pump("1");
@@ -191,6 +193,10 @@ def update_output(contents, filename):
         gradient.append(i['gradient'])
     print(volume)
     print(gradient)
+    global sequence_volumes
+    sequence_volumes = volume
+    global sequence_gradients
+    sequence_gradients = gradient
     return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns]
 
 # Run Button
@@ -236,7 +242,7 @@ def updatetiming(on, tab):
     return timing_message;
 
 # update current fraction display
-    # IMPORTANT: you cannot call a  function to update the display
+    # IMPORTANT: you cannot call a function to update the display
     # you need to change the global variable 'arm_pos'
     # and this will update the display to match next time the timer changes
 @app.callback(
@@ -256,7 +262,7 @@ def get_cur_fraction_msg(cur_fraction, last_fraction):
     return "Fraction: {:0}/{:1}".format(cur_fraction, last_fraction);
 
 # update current volume dispensed display
-    # (again, a functiont to call from the backend)
+    # like with fraction display
 @app.callback(
     Output("volume_display", "children"),
     Input('interval-component', 'n_intervals'),
@@ -268,9 +274,9 @@ def update_volume_display(on, tab):
     if not sequence_in_progress:
         return get_vol_msg(0,0)
     # todo: fetch sequence parameters from global variables
-    placeholder_vols = [5.0,10.0,100.0]
-    so_far_vol = sum(placeholder_vols[:arm_pos]);
-    final_vol = sum(placeholder_vols);
+    global sequence_volumes;
+    so_far_vol = sum(sequence_volumes[:arm_pos]);
+    final_vol = sum(sequence_volumes);
     return get_vol_msg(so_far_vol, final_vol);
 
 def get_vol_msg(so_far_vol, final_vol):
