@@ -98,7 +98,7 @@ app.layout = html.Div([
             #     ]),
             # ])
             
-            #html.Button('start',id='startclick',n_clicks=0),
+            html.Button('start',id='startclick',n_clicks=0),
         ])),
         dcc.Tab(id='monitor',label='Monitor', value='monitor',children=html.Div([
             html.H2(id='Fraction ratio'),
