@@ -1,8 +1,8 @@
 from email import message
 from gc import callbacks
-from turtle import position
+from turtle import position, width
 # from tkinter.ttk import Style
-from dash import Dash, html, dcc, Input, Output, ctx, State
+from dash import Dash, html, dcc, Input, Output, ctx, State,dash_table
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 import datetime
@@ -11,6 +11,9 @@ import pump
 import vacuum_hardware
 import sepfunnel
 import arm
+import pandas as pd
+import io
+import base64
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash('test_app', external_stylesheets=external_stylesheets)
@@ -44,8 +47,57 @@ tab3_switch={}
 app.layout = html.Div([
     dcc.Tabs(id='Main_Tabs', value='setup', mobile_breakpoint=0, children=[
         dcc.Tab(id='setup', label='Setup', value='setup', children=html.Div([
+            # html.H2('Fractions'),
+            # html.Button('start',id='startclick',n_clicks=0),
             html.H2('Fractions'),
-            html.Button('start',id='startclick',n_clicks=0),
+            html.Div([
+                dcc.Upload(
+                    # id='upload-params',
+                    html.A('Select Files'),
+                    id='upload-params',
+                    style={
+                    'width':'80%',
+                    'height':'60px',
+                    'lineHeight': '60px',
+                    'borderWidth': '1px',
+                    'borderStyle': 'dashed',
+                    'borderRadius': '5px',
+                    'textAlign': 'center',
+                    # 'didplay':
+                    # 'margin-left': '100px',
+                    'margin-top':'10px',
+                    'margin-left': '180px',
+                    'vertical-align':'middle',
+                    }
+                ),
+                dash_table.DataTable(
+                    id='dataset'
+                ),
+            ],className="container"),
+
+            # html.Br(),
+            # html.Table([
+            #     html.Th([html.Td("Volume"), html.Td("Gradient")]),
+            #     html.Tr([
+            #         html.Td(
+            #             dcc.Input(
+            #                 id="fra1_v",
+            #                 type="number",
+            #                 value=None,
+            #                 style={
+            #                 'width':'60px'}),
+            #             ),
+            #         html.Td(
+            #             dcc.Input(
+            #             id="fra1_g",
+            #             type="number",
+            #             value='',
+            #             style={
+            #             'width':'60px',
+            #             'margin-left':'-90px'})
+            #             )
+            #     ]),
+            # ])
         ])),
         dcc.Tab(id='monitor',label='Monitor', value='monitor',children=html.Div([
             html.H2(id='Fraction ratio'),
@@ -66,7 +118,7 @@ app.layout = html.Div([
             daq.BooleanSwitch(id='pump2',on=False,label='pump2',style=tab3_switch),
             daq.BooleanSwitch(id='vacuum',on=False,label='vacuum',style=tab3_switch),
             daq.BooleanSwitch(id='sep_funnel',on=False,label='sep_funnel',style=tab3_switch),
-            html.Div(id='one'),
+            html.Div(id='one'),#the 'one' to 'four' have no use, just because every callback need a output
             html.Div(id='two'),
             html.Div(id='three'),
             html.Div(id='four'),
@@ -78,12 +130,67 @@ app.layout = html.Div([
             html.Div(id='testhardware'),
         ])
         ),
-        dcc.Tab(id='tlc',label='TLC', value='tlc'
+        dcc.Tab(id='tlc',label='TLC', value='tlc',children=html.Div([
+            dcc.Upload(
+                # id='upload-image',
+                html.A('Select Files'),
+                id='upload-image',
+                style={
+                'width':'80%',
+                'height':'60px',
+                'lineHeight': '60px',
+                'borderWidth': '1px',
+                'borderStyle': 'dashed',
+                'borderRadius': '5px',
+                'textAlign': 'center',
+                # 'didplay':
+                # 'margin-left': '100px',
+                'margin-top':'10px',
+                'vertical-align':'middle',
+            },
+            multiple=True
+            ),
+            html.Div(id='output-image-upload'),
+        ])
         )
     ])
 ])
 
 # Setup Tab Callbacks ------------------------------
+def parse_contents(contents, filename):
+    content_type, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
+    if 'csv' in filename:
+        # Assume that the user uploaded a CSV file
+        return pd.read_csv(
+            io.StringIO(decoded.decode('utf-8')))
+    elif 'xls' in filename:
+        # Assume that the user uploaded an excel file
+        return pd.read_excel(io.BytesIO(decoded))
+
+
+@app.callback(Output('dataset', 'data'),
+              Output('dataset', 'columns'),
+              Input('upload-params', 'contents'),
+              State('upload-params', 'filename'))
+def update_output(contents, filename):
+    volume = []
+    gradient = []
+    if contents is None:
+        return [{}], []
+    df = parse_contents(contents, filename)
+    # for i in df.columns:
+    #     print({"name": i, "id": i})
+        # volume.append(i[0])
+        # gradient.append(i[1])
+    # print(volume)
+    # print(gradient)
+    for i in df.to_dict('records'):
+        volume.append(i['volume'])
+        gradient.append(i['gradient'])
+    print(volume)
+    print(gradient)
+    return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns]
 
 # Run Button
 @app.callback(
@@ -267,7 +374,7 @@ def arm_run(btn1,btn2,btn3,btn4):
     global arm_pos;
     global Min_armpos;
     global Max_armpos;
-    if "smallest" == ctx.triggered_id:
+    if "smallest" == ctx.triggered_id:# turn the arm to the min position
         print(hardware_arm.tomin());
         arm_pos=Min_armpos;##this can be delete if use arm.py
     elif "smaller"== ctx.triggered_id and arm_pos>Min_armpos:
@@ -276,7 +383,7 @@ def arm_run(btn1,btn2,btn3,btn4):
     elif "bigger"==ctx.triggered_id and arm_pos<Max_armpos:
         print(hardware_arm.bigger());
         arm_pos=arm_pos+1;##this can be delete if use arm.py
-    elif "biggest"==ctx.triggered_id:
+    elif "biggest"==ctx.triggered_id:#turn the arm to the max position
         print(hardware_arm.tomax());
         arm_pos=Max_armpos;##this can be delete if use arm.py
     ##msg='arm at #'+str(arm_pos);
