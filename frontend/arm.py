@@ -1,9 +1,9 @@
 import time
 
 class Arm:
-    def __init__(self,id):
+    def __init__(self,id,position):
         self.id=id;
-        self.position=0;
+        self.position=position;
 
 
     def smaller(self):

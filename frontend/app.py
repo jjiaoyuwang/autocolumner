@@ -22,7 +22,7 @@ app = Dash('test_app', external_stylesheets=external_stylesheets)
 # Variables for tracking machine state ---------------------------
 start_time=time.time()
 sequence_in_progress=False;
-arm_pos=0;
+arm_pos=0;#the position of arm
 Min_armpos=0;##the min of arm position
 Max_armpos=10;##the max of arm position
 pump1=False;
@@ -35,7 +35,7 @@ hardware_pump1=pump.Pump("1");
 hardware_pump2=pump.Pump("2");
 hardware_vacuum=vacuum_hardware.Vacuum("3");
 hardware_sep=sepfunnel.Sepfunnel("4");
-hardware_arm=arm.Arm("5");
+hardware_arm=arm.Arm("5",arm_pos);
 
 message_fraction= "Fraction: {:0}/{:1}".format(0, 0);
 timing_message="Time: 00:00:00";
