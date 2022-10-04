@@ -222,9 +222,9 @@ def start_tab(btn1,cur_tab):
 @app.callback(
     Output('messageoftime','children'),
     Input('interval-component', 'n_intervals'),
-    # todo: make it update when Monitor tab is selected
+    Input('Main_Tabs', 'value'),
     )
-def updatetiming(on):
+def updatetiming(on, tab):
     global start_time;
     global sequence_in_progress;
     # not sure timing_message needs to be global
@@ -241,9 +241,10 @@ def updatetiming(on):
     # and this will update the display to match next time the timer changes
 @app.callback(
     Output("messageoffraction", "children"),
-    Input('interval-component', 'n_intervals')
+    Input('interval-component', 'n_intervals'),
+    Input('Main_Tabs', 'value'),
     )
-def update_fraction_display(on):
+def update_fraction_display(on, tab):
     global arm_pos;
     if sequence_in_progress:
         cur_f_str = get_cur_fraction_msg(arm_pos, Max_armpos);
@@ -258,9 +259,10 @@ def get_cur_fraction_msg(cur_fraction, last_fraction):
     # (again, a functiont to call from the backend)
 @app.callback(
     Output("volume_display", "children"),
-    Input('interval-component', 'n_intervals')
+    Input('interval-component', 'n_intervals'),
+    Input('Main_Tabs', 'value'),
     )
-def update_volume_display(on):
+def update_volume_display(on, tab):
     global sequence_in_progress;
     global arm_pos;
     if not sequence_in_progress:
