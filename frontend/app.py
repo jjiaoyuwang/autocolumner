@@ -48,7 +48,6 @@ app.layout = html.Div([
     dcc.Tabs(id='Main_Tabs', value='setup', mobile_breakpoint=0, children=[
         dcc.Tab(id='setup', label='Setup', value='setup', children=html.Div([
             # html.H2('Fractions'),
-            # html.Button('start',id='startclick',n_clicks=0),
             html.H2('Fractions'),
             html.Div([
                 dcc.Upload(
@@ -98,6 +97,8 @@ app.layout = html.Div([
             #             )
             #     ]),
             # ])
+            
+            #html.Button('start',id='startclick',n_clicks=0),
         ])),
         dcc.Tab(id='monitor',label='Monitor', value='monitor',children=html.Div([
             html.H2(id='Fraction ratio'),
@@ -260,13 +261,18 @@ def get_cur_fraction_msg(cur_fraction, last_fraction):
     Input('interval-component', 'n_intervals')
     )
 def update_volume_display(on):
+    global sequence_in_progress;
     global arm_pos;
-    # todo: calculate current volume and final volume
-    # using arm_pos, and sequence parameters
-    placeholder_vol = 10;
-    placeholder_max_vol = 100;
-    cur_v_str = "Volume Dispensed: {:0}/{:1} mL".format(placeholder_vol, placeholder_max_vol)
-    return cur_v_str;
+    if not sequence_in_progress:
+        return get_vol_msg(0,0)
+    # todo: fetch sequence parameters from global variables
+    placeholder_vols = [5.0,10.0,100.0]
+    so_far_vol = sum(placeholder_vols[:arm_pos]);
+    final_vol = sum(placeholder_vols);
+    return get_vol_msg(so_far_vol, final_vol);
+
+def get_vol_msg(so_far_vol, final_vol):
+    return "Volume Dispensed: {:0}/{:1} mL".format(so_far_vol, final_vol);
 
 # IMPORTANT: stop button and pause button functionality delayed until backside multithreading is implemented.
 # stop the run when STOP button pressed
