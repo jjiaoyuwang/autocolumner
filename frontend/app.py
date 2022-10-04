@@ -15,8 +15,8 @@ import pandas as pd
 import io
 import base64
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = Dash('test_app', external_stylesheets=external_stylesheets)
+# external_stylesheets = ['assets/codepen_stylesheet.css']
+app = Dash('Auto Columner') #, external_stylesheets=external_stylesheets)
 #app.config.suppress_callback_exceptions = True
 
 # Variables for tracking machine state ---------------------------
