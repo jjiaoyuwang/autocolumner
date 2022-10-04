@@ -273,7 +273,6 @@ def update_volume_display(on, tab):
     global arm_pos;
     if not sequence_in_progress:
         return get_vol_msg(0,0)
-    # todo: fetch sequence parameters from global variables
     global sequence_volumes;
     so_far_vol = sum(sequence_volumes[:arm_pos]);
     final_vol = sum(sequence_volumes);
