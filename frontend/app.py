@@ -31,6 +31,8 @@ vacuum=False;
 sep_funnel=False;
 sequence_volumes = [] 
 sequence_gradients = []
+
+status_message = "placeholder status message"
 #---------------------------------------------------------------
 
 hardware_pump1=pump.Pump("1");
@@ -49,8 +51,6 @@ tab3_switch={}
 app.layout = html.Div([
     dcc.Tabs(id='Main_Tabs', value='setup', mobile_breakpoint=0, children=[
         dcc.Tab(id='setup', label='Setup', value='setup', children=html.Div([
-            # html.H2('Fractions'),
-            #html.Div([
             dcc.Upload(
                 # id='upload-params',
                 html.A('Upload Parameters'),
@@ -58,10 +58,11 @@ app.layout = html.Div([
                 className='file-upload',
             ),
             html.H2('Fractions'),
-            dash_table.DataTable(
-                id='dataset'
-            ),
-            #],className="container"),
+            html.Div([
+                dash_table.DataTable(
+                    id='dataset'
+                ),
+            ],className="container"),
 
             # html.Br(),
             # html.Table([
@@ -91,6 +92,7 @@ app.layout = html.Div([
         ])),
         dcc.Tab(id='monitor',label='Monitor', value='monitor',children=html.Div([
             html.H2(id='Fraction ratio'),
+            dcc.Markdown(f'''{status_message}''',id="mntr_status_message"),
             dcc.Markdown(f'''{message_fraction}''',id="messageoffraction"),
             dcc.Markdown(f'''{timing_message}''',id="messageoftime"),
             dcc.Markdown(f'''{volume_str}''',id="volume_display"),
