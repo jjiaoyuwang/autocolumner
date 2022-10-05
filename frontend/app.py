@@ -112,19 +112,22 @@ app.layout = html.Div([
         ])
         ),
         dcc.Tab(id='debug',label='Debug', value='debug',children=html.Div([
-            daq.BooleanSwitch(id='pump1',on=False,label='pump1',style=tab3_switch),
-            daq.BooleanSwitch(id='pump2',on=False,label='pump2',style=tab3_switch),
-            daq.BooleanSwitch(id='vacuum',on=False,label='vacuum',style=tab3_switch),
-            daq.BooleanSwitch(id='sep_funnel',on=False,label='sep_funnel',style=tab3_switch),
+            daq.BooleanSwitch(id='pump1',on=False,label='pump1'),
+            daq.BooleanSwitch(id='pump2',on=False,label='pump2'),
+            daq.BooleanSwitch(id='vacuum',on=False,label='vacuum'),
+            daq.BooleanSwitch(id='sep_funnel',on=False,label='sep_funnel'),
             html.Div(id='one'),#the 'one' to 'four' have no use, just because every callback need a output
             html.Div(id='two'),
             html.Div(id='three'),
             html.Div(id='four'),
             html.Div(id='the arm message'),
-            html.Button('|<', id='smallest', n_clicks=0),
-            html.Button('<', id='smaller', n_clicks=0),
-            html.Button('>', id='bigger', n_clicks=0),
-            html.Button('>|', id='biggest', n_clicks=0),
+            # trying to position the arm control buttons all at once
+            html.Div(id='arm_controls_div', children=[
+                html.Button('|<', id='smallest', n_clicks=0),
+                html.Button('<', id='smaller', n_clicks=0),
+                html.Button('>', id='bigger', n_clicks=0),
+                html.Button('>|', id='biggest', n_clicks=0),
+            ]),
             html.Div(id='testhardware'),
         ])
         ),
