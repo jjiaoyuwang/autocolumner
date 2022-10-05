@@ -112,22 +112,26 @@ app.layout = html.Div([
         ])
         ),
         dcc.Tab(id='debug',label='Debug', value='debug',children=html.Div([
-            daq.BooleanSwitch(id='pump1',on=False,label='pump1'),
-            daq.BooleanSwitch(id='pump2',on=False,label='pump2'),
-            daq.BooleanSwitch(id='vacuum',on=False,label='vacuum'),
-            daq.BooleanSwitch(id='sep_funnel',on=False,label='sep_funnel'),
+            daq.BooleanSwitch(id='pump1',on=False,label='Pump 1'),
+            html.Hr(),
+            daq.BooleanSwitch(id='pump2',on=False,label='Pump 2'),
+            html.Hr(),
+            daq.BooleanSwitch(id='vacuum',on=False,label='Vacuum'),
+            html.Hr(),
+            daq.BooleanSwitch(id='sep_funnel',on=False,label='Sep. Funnel'),
+            html.Hr(),
             html.Div(id='one'),#the 'one' to 'four' have no use, just because every callback need a output
             html.Div(id='two'),
             html.Div(id='three'),
             html.Div(id='four'),
-            html.Div(id='the arm message'),
             # trying to position the arm control buttons all at once
             html.Div(id='arm_controls_div', children=[
+                html.Div(id='the arm message'),
                 html.Button('|<', id='smallest', n_clicks=0),
                 html.Button('<', id='smaller', n_clicks=0),
                 html.Button('>', id='bigger', n_clicks=0),
                 html.Button('>|', id='biggest', n_clicks=0),
-            ]),
+            ], style={'text-align':'center'}),
             html.Div(id='testhardware'),
         ])
         ),
@@ -398,7 +402,7 @@ def arm_run(btn1,btn2,btn3,btn4):
         print(hardware_arm.tomax());
         arm_pos=Max_armpos;##this can be delete if use arm.py
     ##msg='arm at #'+str(arm_pos);
-    msg='arm at #'+str(hardware_arm.position);
+    msg='Arm at #'+str(hardware_arm.position);
     return html.Div(msg);
 
 if __name__ == '__main__':
