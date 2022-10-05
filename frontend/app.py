@@ -56,20 +56,7 @@ app.layout = html.Div([
                     # id='upload-params',
                     html.A('Select Files'),
                     id='upload-params',
-                    style={
-                    'width':'80%',
-                    'height':'60px',
-                    'lineHeight': '60px',
-                    'borderWidth': '1px',
-                    'borderStyle': 'dashed',
-                    'borderRadius': '5px',
-                    'textAlign': 'center',
-                    # 'didplay':
-                    # 'margin-left': '100px',
-                    'margin-top':'10px',
-                    'margin-left': '180px',
-                    'vertical-align':'middle',
-                    }
+                    className='file-upload',
                 ),
                 dash_table.DataTable(
                     id='dataset'
@@ -139,19 +126,7 @@ app.layout = html.Div([
                 # id='upload-image',
                 html.A('Select Files'),
                 id='upload-image',
-                style={
-                'width':'80%',
-                'height':'60px',
-                'lineHeight': '60px',
-                'borderWidth': '1px',
-                'borderStyle': 'dashed',
-                'borderRadius': '5px',
-                'textAlign': 'center',
-                # 'didplay':
-                # 'margin-left': '100px',
-                'margin-top':'10px',
-                'vertical-align':'middle',
-            },
+                className='file-upload',
             multiple=True
             ),
             html.Div(id='output-image-upload'),
