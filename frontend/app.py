@@ -91,12 +91,17 @@ app.layout = html.Div([
             html.Button('start',id='startclick',n_clicks=0),
         ])),
         dcc.Tab(id='monitor',label='Monitor', value='monitor',children=html.Div([
-            html.H2(id='Fraction ratio'),
+            html.H3('Fraction #:', id="messageoffraction"),
+            #dcc.Markdown(f'''{message_fraction}''',id="messageoffraction"),
+            html.Hr(),
+            html.H3('Time Elapsed:', id="messageoftime"),
+            html.Hr(),
+            html.H3('Volume Dispensed:',id="volume_display"),
+            html.Hr(),
+            html.H3('Status:'),
+            # status message in smaller font, below "Status:" heading
             dcc.Markdown(f'''{status_message}''',id="mntr_status_message"),
-            dcc.Markdown(f'''{message_fraction}''',id="messageoffraction"),
-            dcc.Markdown(f'''{timing_message}''',id="messageoftime"),
-            dcc.Markdown(f'''{volume_str}''',id="volume_display"),
-            html.H2(id='timing'),
+            html.Hr(),
             # pause and stop buttons removed until backend can support them
             # html.Button('Pause', id='pause-click', n_clicks=0, disabled=True),
             # html.Button('Stop', id='stop-click', n_clicks=0, disabled=True),
@@ -237,7 +242,7 @@ def update_fraction_display(on, tab):
     return cur_f_str;
 
 def get_cur_fraction_msg(cur_fraction, last_fraction):
-    return "Fraction: {:0}/{:1}".format(cur_fraction, last_fraction);
+    return "Fraction #: {:0}/{:1}".format(cur_fraction, last_fraction);
 
 # update current volume dispensed display
     # like with fraction display
