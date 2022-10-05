@@ -50,18 +50,18 @@ app.layout = html.Div([
     dcc.Tabs(id='Main_Tabs', value='setup', mobile_breakpoint=0, children=[
         dcc.Tab(id='setup', label='Setup', value='setup', children=html.Div([
             # html.H2('Fractions'),
+            #html.Div([
+            dcc.Upload(
+                # id='upload-params',
+                html.A('Upload Parameters'),
+                id='upload-params',
+                className='file-upload',
+            ),
             html.H2('Fractions'),
-            html.Div([
-                dcc.Upload(
-                    # id='upload-params',
-                    html.A('Select Files'),
-                    id='upload-params',
-                    className='file-upload',
-                ),
-                dash_table.DataTable(
-                    id='dataset'
-                ),
-            ],className="container"),
+            dash_table.DataTable(
+                id='dataset'
+            ),
+            #],className="container"),
 
             # html.Br(),
             # html.Table([
