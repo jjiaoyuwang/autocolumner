@@ -108,8 +108,9 @@ app.layout = html.Div([
             dcc.Markdown(f'''{timing_message}''',id="messageoftime"),
             dcc.Markdown(f'''{volume_str}''',id="volume_display"),
             html.H2(id='timing'),
-            html.Button('Pause', id='pause-click', n_clicks=0, disabled=True),
-            html.Button('Stop', id='stop-click', n_clicks=0, disabled=True),
+            # pause and stop buttons removed until backend can support them
+            # html.Button('Pause', id='pause-click', n_clicks=0, disabled=True),
+            # html.Button('Stop', id='stop-click', n_clicks=0, disabled=True),
             dcc.Interval(
             id='interval-component',
             interval=1*1000, # in milliseconds
