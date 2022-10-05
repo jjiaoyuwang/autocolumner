@@ -264,6 +264,18 @@ def update_volume_display(on, tab):
 def get_vol_msg(so_far_vol, final_vol):
     return "Volume Dispensed: {:0}/{:1} mL".format(so_far_vol, final_vol);
 
+# update current status message
+    # edit the global variable status_message
+    # and this will update the page to match that later
+@app.callback(
+    Output("mntr_status_message", "children"),
+    Input('interval-component', 'n_intervals'),
+    Input('Main_Tabs', 'value'),
+    )
+def update_status_display(on, tab):
+    global status_message;
+    return status_message;
+
 # IMPORTANT: stop button and pause button functionality delayed until backside multithreading is implemented.
 # stop the run when STOP button pressed
     # close all peripherals
