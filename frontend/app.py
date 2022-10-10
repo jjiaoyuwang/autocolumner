@@ -60,7 +60,8 @@ app.layout = html.Div([
             html.H2('Fractions'),
             html.Div([
                 dash_table.DataTable(
-                    id='dataset'
+                    id='dataset',
+                    ##editable=True#this can make the value editable
                 ),
             ],className="container"),
 
@@ -88,20 +89,15 @@ app.layout = html.Div([
             #     ]),
             # ])
             
-            html.Button('start',id='startclick',n_clicks=0,style={'height':'2em','width':'90%','margin-left':'5%','margin-top':'10px','font-size':'2em'}),
+            html.Button('start',id='startclick',n_clicks=0),
         ])),
         dcc.Tab(id='monitor',label='Monitor', value='monitor',children=html.Div([
-            html.H3('Fraction #:', id="messageoffraction"),
-            #dcc.Markdown(f'''{message_fraction}''',id="messageoffraction"),
-            html.Hr(),
-            html.H3('Time Elapsed:', id="messageoftime"),
-            html.Hr(),
-            html.H3('Volume Dispensed:',id="volume_display"),
-            html.Hr(),
-            html.H3('Status:'),
-            # status message in smaller font, below "Status:" heading
+            html.H2(id='Fraction ratio'),
             dcc.Markdown(f'''{status_message}''',id="mntr_status_message"),
-            html.Hr(),
+            dcc.Markdown(f'''{message_fraction}''',id="messageoffraction"),
+            dcc.Markdown(f'''{timing_message}''',id="messageoftime"),
+            dcc.Markdown(f'''{volume_str}''',id="volume_display"),
+            html.H2(id='timing'),
             # pause and stop buttons removed until backend can support them
             # html.Button('Pause', id='pause-click', n_clicks=0, disabled=True),
             # html.Button('Stop', id='stop-click', n_clicks=0, disabled=True),
@@ -112,26 +108,19 @@ app.layout = html.Div([
         ])
         ),
         dcc.Tab(id='debug',label='Debug', value='debug',children=html.Div([
-            daq.BooleanSwitch(id='pump1',on=False,label='Pump 1'),
-            html.Hr(),
-            daq.BooleanSwitch(id='pump2',on=False,label='Pump 2'),
-            html.Hr(),
-            daq.BooleanSwitch(id='vacuum',on=False,label='Vacuum'),
-            html.Hr(),
-            daq.BooleanSwitch(id='sep_funnel',on=False,label='Sep. Funnel'),
-            html.Hr(),
+            daq.BooleanSwitch(id='pump1',on=False,label='pump1',style=tab3_switch),
+            daq.BooleanSwitch(id='pump2',on=False,label='pump2',style=tab3_switch),
+            daq.BooleanSwitch(id='vacuum',on=False,label='vacuum',style=tab3_switch),
+            daq.BooleanSwitch(id='sep_funnel',on=False,label='sep_funnel',style=tab3_switch),
             html.Div(id='one'),#the 'one' to 'four' have no use, just because every callback need a output
             html.Div(id='two'),
             html.Div(id='three'),
             html.Div(id='four'),
-            # trying to position the arm control buttons all at once
-            html.Div(id='arm_controls_div', children=[
-                html.Div(id='the arm message'),
-                html.Button('|<', id='smallest', n_clicks=0),
-                html.Button('<', id='smaller', n_clicks=0),
-                html.Button('>', id='bigger', n_clicks=0),
-                html.Button('>|', id='biggest', n_clicks=0),
-            ], style={'text-align':'center'}),
+            html.Div(id='the arm message'),
+            html.Button('|<', id='smallest', n_clicks=0),
+            html.Button('<', id='smaller', n_clicks=0),
+            html.Button('>', id='bigger', n_clicks=0),
+            html.Button('>|', id='biggest', n_clicks=0),
             html.Div(id='testhardware'),
         ])
         ),
@@ -249,7 +238,7 @@ def update_fraction_display(on, tab):
     return cur_f_str;
 
 def get_cur_fraction_msg(cur_fraction, last_fraction):
-    return "Fraction #: {:0}/{:1}".format(cur_fraction, last_fraction);
+    return "Fraction: {:0}/{:1}".format(cur_fraction, last_fraction);
 
 # update current volume dispensed display
     # like with fraction display
@@ -270,18 +259,6 @@ def update_volume_display(on, tab):
 
 def get_vol_msg(so_far_vol, final_vol):
     return "Volume Dispensed: {:0}/{:1} mL".format(so_far_vol, final_vol);
-
-# update current status message
-    # edit the global variable status_message
-    # and this will update the page to match that later
-@app.callback(
-    Output("mntr_status_message", "children"),
-    Input('interval-component', 'n_intervals'),
-    Input('Main_Tabs', 'value'),
-    )
-def update_status_display(on, tab):
-    global status_message;
-    return status_message;
 
 # IMPORTANT: stop button and pause button functionality delayed until backside multithreading is implemented.
 # stop the run when STOP button pressed
@@ -402,7 +379,7 @@ def arm_run(btn1,btn2,btn3,btn4):
         print(hardware_arm.tomax());
         arm_pos=Max_armpos;##this can be delete if use arm.py
     ##msg='arm at #'+str(arm_pos);
-    msg='Arm at #'+str(hardware_arm.position);
+    msg='arm at #'+str(hardware_arm.position);
     return html.Div(msg);
 
 if __name__ == '__main__':
