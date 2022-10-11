@@ -323,12 +323,11 @@ li {
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 table {
   border-collapse: collapse;
-  border-color: green;
 }
 th:not(.CalendarDay),
 td:not(.CalendarDay) {
   padding: 12px 15px;
-  text-align: right;
+  text-align: left;
   border-bottom: 1px solid #E1E1E1; }
 th:first-child:not(.CalendarDay),
 td:first-child:not(.CalendarDay) {
@@ -336,9 +335,8 @@ td:first-child:not(.CalendarDay) {
 th:last-child:not(.CalendarDay),
 td:last-child:not(.CalendarDay) {
   padding-right: 0; }
-td {
-  background-color:white;/*this can influence the color of the selected cell*/
-}
+
+
 /* Spacing
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 button,
