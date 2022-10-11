@@ -1,0 +1,247 @@
+[33mcommit 2286d36089d726944d2827fa10113f4597c97f6e[m[33m ([m[1;36mHEAD -> [m[1;32mtechlauncher2022S2[m[33m, [m[1;31morigin/techlauncher2022S2[m[33m)[m
+Author: Yun Guan <u6472601@anu.edu.au>
+Date:   Mon Oct 10 12:12:03 2022 +0000
+
+    the cell(not border) not change color if selected.
+
+[33mcommit 6075dcd535c3172bb19681cd3854b0a51bec0119[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 21:29:15 2022 +1100
+
+    Debug tab now looks more like UI design
+    
+    The switch labels in the UI design are to the left of the switches, not above, but that seems low priority for now.
+
+[33mcommit 7ab5b22699e773acc35d2bce563893eecd8fd27b[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 18:34:15 2022 +1100
+
+    messed around with debug tab styles
+
+[33mcommit 1bb2416406b520d2f0d7fdaaf801ed4476400804[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 16:50:33 2022 +1100
+
+    put a little space between the start button and the sequence parameter table
+
+[33mcommit d2550d53067f509fb628c5f31fffd28f2a2fefeb[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 16:42:38 2022 +1100
+
+    messing with start button styles
+
+[33mcommit 6659c4a2fdf5bc1b01e653b177d4df2072ace1ed[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 16:31:51 2022 +1100
+
+    made callback for status message updates
+
+[33mcommit 7fe220ace67811e95c98a7d57ea985776f843781[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 16:27:48 2022 +1100
+
+    monitor tab visuals match UI design
+
+[33mcommit c9be69900aa80bcea8e5bbe2deaef3cbf9225aac[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 15:14:29 2022 +1100
+
+    Create testInvalid.csv
+    
+    an example of obviously invalid sequence parameters
+
+[33mcommit df12bde3e9c8a0dc72db0f71f4d579fd914f383a[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 14:07:44 2022 +1100
+
+    fixed up parameter table display
+
+[33mcommit 9217d898890b05b40ed7f90fff65802d24e2388f[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 13:58:05 2022 +1100
+
+    made setup tab look more like UI sketch
+
+[33mcommit cb74f38fc17723a387be53e727321a4fea6ab52e[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 13:53:11 2022 +1100
+
+    moved file-upload style blocks to css file
+    
+    it's the same, but in pure CSS now.
+
+[33mcommit 2eb5ef8531124948eec40b4459e3348c918fcf32[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 13:36:41 2022 +1100
+
+    temporarily removed pause and stop buttons
+
+[33mcommit 0335df9993ad8d0347769fc3400d99daadf038fe[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Oct 5 08:05:59 2022 +1100
+
+    removed todo comment
+
+[33mcommit 436fc9f70c788d9751e83afa0d60c21d1401dccb[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Tue Oct 4 23:04:40 2022 +1100
+
+    finished volume display functionality
+
+[33mcommit 3a6ed4addb0e6bf9ea58e645333561aea5120b70[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Tue Oct 4 22:48:57 2022 +1100
+
+    made app.py use a local css stylesheet
+
+[33mcommit 03eb607b55659ab10777658f621f3afa425a13ba[m
+Author: Yun Guan <u6472601@anu.edu.au>
+Date:   Tue Oct 4 06:43:52 2022 +0000
+
+    relate arm position between arm and
+
+[33mcommit ae900615e8d59b71a2912cf46a317c7b5eed070b[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Tue Oct 4 17:28:44 2022 +1100
+
+    made monitor tab displays instantly update when tab's selected
+
+[33mcommit 64cfb8770602e151a63c1a878ac04b32575652c4[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Tue Oct 4 17:19:49 2022 +1100
+
+    put start button back in so that dash loads
+
+[33mcommit ff8f9801a29ec8a16c6edec3d08eb86f90b9e807[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Tue Oct 4 17:19:08 2022 +1100
+
+    made volume display functionality
+    
+    still need to hook it up to saved sequence parameters
+
+[33mcommit 1719a739047af0c9eba7936781bec26603db3b09[m
+Merge: 5bbc84f 7d5fee0
+Author: mengfan <u7375900@anu.edu.au>
+Date:   Tue Oct 4 03:37:08 2022 +0000
+
+    Merge branch 'techlauncher2022S2' of https://github.com/jjiaoyuwang/autocolumner into techlauncher2022S2
+
+[33mcommit 5bbc84fc1f530bcbded3d99f4d0256c285aa44ae[m
+Author: mengfan <u7375900@anu.edu.au>
+Date:   Tue Oct 4 03:34:08 2022 +0000
+
+    setup update
+
+[33mcommit 7d5fee01cf56cb9822d0dd0ace2f461d5af76f95[m
+Author: Yun Guan <u6472601@anu.edu.au>
+Date:   Mon Oct 3 22:50:19 2022 +0000
+
+    add some note
+
+[33mcommit 49306d2853e5a3966e59d720450ab88ad6969d32[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Mon Oct 3 17:13:05 2022 +1100
+
+    cleaned up monitor tab stuff
+
+[33mcommit 3bc0498c6e3ad433d99582d772e691d6287ecc55[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Mon Oct 3 15:11:21 2022 +1100
+
+    implemented fraction display and half of volume display
+
+[33mcommit 421b5e55707ef7d1cc26efd360d44477fdbd2462[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Mon Oct 3 14:48:34 2022 +1100
+
+    made time display better
+    
+    there's more improvements possible, see the todo comments
+
+[33mcommit 850cbda27cbde8cf80186ade43ec4f79212c88c6[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Mon Oct 3 13:52:44 2022 +1100
+
+    made setup tab open by default
+
+[33mcommit 1cce7a547402c72d1cf0d0fa1ee280bb6db8d4ba[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Sep 28 21:03:07 2022 +1000
+
+    added plans for Monito Tab implementation
+
+[33mcommit df2b8b34aa530f135e1632c8618b81ef9db350a5[m
+Author: Yun Guan <u6472601@anu.edu.au>
+Date:   Wed Sep 28 04:31:25 2022 +0000
+
+    add paremeter of max and min of arm position
+
+[33mcommit efbcd8dafaccf282c1581a48aa491850f1e224f0[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Sep 28 13:57:45 2022 +1000
+
+    tabs should now render horizontally on narrow screen sizes
+    
+    There is a minimum-width that I'm still looking into though.
+
+[33mcommit c587c9e039529a4dfbe25f56b8ad4356d3d92973[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Wed Sep 28 10:50:41 2022 +1000
+
+    trying to display setup tab by default.
+    
+    Currently, there's a bug where it'll display the setup tab for half a second then switch to showing no tabs.
+
+[33mcommit a076c6b4e308d962445600ac05471472487430bb[m
+Author: Simon Brown <simon.sy.brown@gmail.com>
+Date:   Tue Sep 27 22:08:42 2022 +1000
+
+    adjusted code formatting
+    
+    removed whitespace between callback headers and the functions they were heading.
+
+[33mcommit f8964e3f50d23da35f04c73e916c23d75cf1c127[m
+Author: Yun Guan <u6472601@anu.edu.au>
+Date:   Fri Sep 23 00:48:37 2022 +0000
+
+    call function
+
+[33mcommit 28230fa74fcf8adce192db91a101f97cf49be115[m
+Author: Yun Guan <u6472601@anu.edu.au>
+Date:   Wed Sep 14 05:08:04 2022 +0000
+
+    add 4tabs
+
+[33mcommit 69ddf2ee806224f89abab2acec5837bb37fba6a2[m
+Author: speedrockstrong <speedrockstrong@hotmail.com>
+Date:   Wed Sep 14 14:19:07 2022 +1000
+
+    dash app now accepts external connections.
+
+[33mcommit 4d46950cbcd96e9cf50ab4a317c98388401320eb[m
+Author: Yun Guan <u6472601@anu.edu.au>
+Date:   Fri Aug 26 00:33:59 2022 +0000
+
+    Make pressing each button call a different function
+
+[33mcommit 09ea002b7191cb6338905b90fe8988bd5e7859f3[m
+Author: Joseph HW <joseph_wang@live.ie>
+Date:   Wed Aug 10 23:21:51 2022 +1000
+
+    added sample plotly dash app
+
+[33mcommit bbc189ed8fc5b9b293214a3ab8b9825b2d993e6f[m
+Author: Joseph HW <joseph_wang@live.ie>
+Date:   Wed Aug 10 22:55:15 2022 +1000
+
+    docker in vscode will throw an exception if no arduino is connected during initialisation. I have modified devcontainer.json so that TechLauncher2002S2 team can run software without arduino attached
+
+[33mcommit 2e714c82065ce146e021b8f982f9782921fc846a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: Joseph HW <joseph_wang@live.ie>
+Date:   Wed Aug 10 22:52:23 2022 +1000
+
+    added dash_bootstrap_components to requirements and removed app.py, clean up repository before sharing with Techlauncher2022S2 team
+
+[33mcommit 39ee2e5701ec72c9b3860ed89bb03d560dbdb1c9[m
+Author: ¨Joseph <¨jose
