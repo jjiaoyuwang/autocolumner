@@ -242,8 +242,9 @@ def updatetiming(on, tab):
     )
 def update_fraction_display(on, tab):
     global arm_pos;
+    global sequence_volumes;
     if sequence_in_progress:
-        cur_f_str = get_cur_fraction_msg(arm_pos, Max_armpos);
+        cur_f_str = get_cur_fraction_msg(arm_pos,len(sequence_volumes));
     else:
         cur_f_str = get_cur_fraction_msg(0,0);
     return cur_f_str;
