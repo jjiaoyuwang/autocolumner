@@ -22,8 +22,8 @@ app = Dash('Auto Columner') #, external_stylesheets=external_stylesheets)
 # Variables for tracking machine state ---------------------------
 start_time=time.time()
 sequence_in_progress=False;
-arm_pos=0;#the position of arm
-Min_armpos=0;##the min of arm position
+arm_pos=1;#the position of arm
+Min_armpos=1;##the min of arm position
 Max_armpos=10;##the max of arm position. todo: calculate from sequence parameters?
 pump1=False;
 pump2=False;
