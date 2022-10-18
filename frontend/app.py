@@ -488,7 +488,6 @@ def update_image(list_of_contents, list_of_names, list_of_dates, n_clicks):
 
 @app.callback(Output('auto_result','children'),
             Input('auto','n_clicks'))
-
 def auto_result(n_clicks):
     children = []
     if n_clicks != 0 and os.path.exists("./assets/cal.png"):
