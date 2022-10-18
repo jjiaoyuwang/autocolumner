@@ -1,8 +1,9 @@
 from email import message
+from email.mime import image
 from gc import callbacks
-from turtle import position, width
+from turtle import ht, position, width
 # from tkinter.ttk import Style
-from dash import Dash, html, dcc, Input, Output, ctx, State,dash_table
+from dash import Dash, html, dcc, Input, Output, ctx, State,dash_table,no_update
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 import datetime
@@ -14,6 +15,20 @@ import arm
 import pandas as pd
 import io
 import base64
+from PIL import Image
+import cv2
+import os
+import sys
+import numpy as np
+import plotly.express as px
+import json
+from matplotlib import pyplot as plt
+
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../')))
+
+from cv_method import calibration
+from cv_method.detector import find_spots
 
 # external_stylesheets = ['assets/codepen_stylesheet.css']
 app = Dash('Auto Columner') #, external_stylesheets=external_stylesheets)
@@ -46,6 +61,8 @@ volume_str="Volume: 0/0 mL";
 button_buttom={}
 tab3_switch={}
 
+fig = px.imshow(cv2.imread("./blank.png"))
+
 app.layout = html.Div([
     dcc.Tabs(id='Main_Tabs', value='setup', mobile_breakpoint=0, children=[
         dcc.Tab(id='setup', label='Setup', value='setup', children=html.Div([
@@ -75,30 +92,6 @@ app.layout = html.Div([
                     id='dataset'
                 ),
             ],className="container"),
-
-            # html.Br(),
-            # html.Table([
-            #     html.Th([html.Td("Volume"), html.Td("Gradient")]),
-            #     html.Tr([
-            #         html.Td(
-            #             dcc.Input(
-            #                 id="fra1_v",
-            #                 type="number",
-            #                 value=None,
-            #                 style={
-            #                 'width':'60px'}),
-            #             ),
-            #         html.Td(
-            #             dcc.Input(
-            #             id="fra1_g",
-            #             type="number",
-            #             value='',
-            #             style={
-            #             'width':'60px',
-            #             'margin-left':'-90px'})
-            #             )
-            #     ]),
-            # ])
             
             html.Button('start',id='startclick',n_clicks=0),
         ])),
@@ -135,9 +128,13 @@ app.layout = html.Div([
         ),
         dcc.Tab(id='tlc',label='TLC', value='tlc',children=html.Div([
             dcc.Upload(
-                # id='upload-image',
-                html.A('Select Files'),
                 id='upload-image',
+                children=html.Div([
+                    'Drag and Drop or ',
+            html.A('Select Files')
+                ]),
+                # html.A('Select Files'),
+                # id='upload-image',
                 style={
                 'width':'80%',
                 'height':'60px',
@@ -153,7 +150,15 @@ app.layout = html.Div([
             },
             multiple=True
             ),
+            html.Button('Delete',id='delete_img',n_clicks=0),
             html.Div(id='output-image-upload'),
+            html.Button('Automatic Outputs', id='auto',n_clicks=0),
+            html.Button('Semi-Automatic Outputs',id='semi',n_clicks=0),
+            html.Div(id='auto_result'),
+            html.Div(id='semi_result')
+            # html.Div(id='graph_display'),
+            # dcc.Graph(id="graph-picture", figure=fig),
+            # html.Pre(id="annotations-data")
         ])
         )
     ])
@@ -403,6 +408,87 @@ def arm_run(btn1,btn2,btn3,btn4):
     ##msg='arm at #'+str(arm_pos);
     msg='arm at #'+str(hardware_arm.position);
     return html.Div(msg);
+
+@app.callback(Output('output-image-upload', 'children'),
+            #   Output('annotations-data','show_data'),
+              Input('upload-image', 'contents'),
+              State('upload-image', 'filename'),
+              State('upload-image', 'last_modified'),
+              Input('delete_img','n_clicks'),
+            #   Input("graph-picture", "relayoutData"),
+              prevent_initial_call=True,)
+                     
+def update_image(list_of_contents, list_of_names, list_of_dates, n_clicks):
+    config = {
+        "modeBarButtonsToAdd": [
+            "drawline",
+            "drawopenpath",
+            "drawclosedpath",
+            "drawcircle",
+            "drawrect",
+            "eraseshape",
+        ]
+    }
+
+    # show_data = no_update
+    if "delete_img" == ctx.triggered_id:
+        os.remove("./assets/cal.png")
+        children = []
+        # return children,show_data
+        return children
+
+    if list_of_contents is not None:
+        if not os.path.exists("./assets/cal.png"):
+            for c, n, d in zip(list_of_contents, list_of_names, list_of_dates):
+                content_type, content_string = c.split(',')
+                decoded = base64.b64decode(content_string)
+                img = cv2.imdecode(np.array(bytearray(decoded),dtype='uint8'),cv2.IMREAD_UNCHANGED)
+                solved_img = calibration.calibrate(img)
+                cv2.imwrite("./assets/cal.png",solved_img)
+                children = [
+                    html.Div([
+                    html.H5(n),
+                    html.H6(datetime.datetime.fromtimestamp(d)),
+                    html.Img(src=c),
+                    html.Img(src=app.get_asset_url('cal.png')),
+                    html.Hr(),
+                    dcc.Graph(figure=px.imshow(cv2.imread("./assets/cal.png")),config=config),
+                    ])
+                ]
+        else:
+            for c, n, d in zip(list_of_contents, list_of_names, list_of_dates):
+                children = [
+                    html.Div([
+                    html.H5(n),
+                    html.H6(datetime.datetime.fromtimestamp(d)),
+                    html.Img(src=c),
+                    html.Img(src=app.get_asset_url('cal.png')),
+                    html.Hr(),
+                    dcc.Graph(figure=px.imshow(cv2.imread("./assets/cal.png")),config=config),
+                    ])
+                ]
+    # if "shapes" in relayoutData:
+    #     show_data =  json.dumps(relayoutData["shapes"], indent=2)
+        # return children,show_data
+        return children
+
+@app.callback(Output('auto_result','children'),
+            Input('auto','n_clicks'))
+
+def auto_result(n_clicks):
+    children = []
+    if n_clicks != 0 and os.path.exists("./assets/cal.png"):
+        img = cv2.imread("./assets/cal.png")
+        P,rfs = find_spots(img)
+        dst = img.copy()
+        for o in P:
+            cv2.drawMarker(img=dst, position=(int(o[0]), int(o[1])), color=(0, 0, 255), markerType=cv2.MARKER_CROSS)
+        # plt.imshow(cv2.cvtColor(dst, cv2.COLOR_BGR2RGB)), plt.show()
+        cv2.imwrite("./assets/auto.png",dst)
+        children = [
+            html.Img(src="./assets/auto.png")
+        ]
+    return children
 
 if __name__ == '__main__':
     # run server with only internal connections allowed
