@@ -41,9 +41,12 @@ def cluster(M: np.ndarray):
         db = DBSCAN(eps=eps, min_samples=1).fit(x.reshape((m, 1)))
         labels_ = db.labels_
         K = set(labels_)
-        for k in K:
-            M_k = M[np.argwhere(labels_ == k).squeeze(axis=1)]
-            l.extend(cluster(M_k))
+        if K != {0}:
+            for k in K:
+                M_k = M[np.argwhere(labels_ == k).squeeze(axis=1)]
+                l.extend(cluster(M_k))
+        else:
+            l.extend([M])
 
     return l
 
@@ -79,12 +82,15 @@ def opt(clusterList: list):
             cl.append(C)
         else:
             C_r = np.vstack((C, clusterList[i + 1]))
-            d = perp(C_r, ls(C_r))
-            if np.mean(d) < perp_th * w:
-                indices.extend([i, i + 1])
-                cl.append(C_r)
-            else:
+            if len(C_r) < 3:
                 cl.append(C)
+            else:
+                d = perp(C_r, ls(C_r))
+                if np.mean(d) < perp_th * w:
+                    indices.extend([i, i + 1])
+                    cl.append(C_r)
+                else:
+                    cl.append(C)
     return cl
 
 
