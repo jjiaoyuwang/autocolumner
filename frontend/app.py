@@ -432,7 +432,6 @@ def arm_run(btn1,btn2,btn3,btn4):
               Input('delete_img','n_clicks'),
             #   Input("graph-picture", "relayoutData"),
               prevent_initial_call=True,)
-                     
 def update_image(list_of_contents, list_of_names, list_of_dates, n_clicks):
     config = {
         "modeBarButtonsToAdd": [
