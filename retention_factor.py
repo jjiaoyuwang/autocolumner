@@ -27,7 +27,7 @@ def total_ls(M: np.ndarray):
 
     return (a, b, c), D
 
-
+# updated
 def cluster(M: np.ndarray):
     l = []
     m, n = M.shape
