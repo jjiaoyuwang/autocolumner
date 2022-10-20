@@ -77,7 +77,7 @@ app.layout = html.Div([
             html.H2('Fractions'),
             html.Div([
                 dash_table.DataTable(
-                    id='dataset'
+                    id='params_table'
                 ),
             ],className="container"),
             
@@ -180,8 +180,8 @@ def parse_contents(contents, filename):
         return pd.read_excel(io.BytesIO(decoded))
 
 
-@app.callback(Output('dataset', 'data'),
-              Output('dataset', 'columns'),
+@app.callback(Output('params_table', 'data'),
+              Output('params_table', 'columns'),
               Input('upload-params', 'contents'),
               State('upload-params', 'filename'))
 def update_output(contents, filename):
@@ -283,7 +283,7 @@ def update_volume_display(on, tab):
     if not sequence_in_progress:
         return get_vol_msg(0,0)
     global sequence_volumes;
-    so_far_vol = sum(sequence_volumes[:arm_pos]);
+    so_far_vol = sum(sequence_volumes[:arm_pos-1]);
     final_vol = sum(sequence_volumes);
     return get_vol_msg(so_far_vol, final_vol);
 
@@ -424,6 +424,10 @@ def arm_run(btn1,btn2,btn3,btn4):
     msg='Arm at #'+str(hardware_arm.position);
     return html.Div(msg);
 
+
+
+# TLC Tab callbacks -------------------------------------------
+
 @app.callback(Output('output-image-upload', 'children'),
             #   Output('annotations-data','show_data'),
               Input('upload-image', 'contents'),
@@ -502,6 +506,9 @@ def auto_result(n_clicks):
             html.Img(src="./assets/auto.png")
         ]
     return children
+
+# --------------------------------------------------
+
 
 if __name__ == '__main__':
     # run server with only internal connections allowed
