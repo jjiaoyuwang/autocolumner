@@ -98,7 +98,7 @@ app.layout = html.Div([
             # pause and stop buttons removed until backend can support them
             # html.Button('Pause', id='pause-click', n_clicks=0, disabled=True),
             # html.Button('Stop', id='stop-click', n_clicks=0, disabled=True),
-            dcc.Interval(
+            dcc.Interval( # this interval component is for periodically updating this tab's values
             id='interval-component',
             interval=1*1000, # in milliseconds
             n_intervals=0)
@@ -178,13 +178,15 @@ def parse_contents(contents, filename):
     elif 'xls' in filename:
         # Assume that the user uploaded an excel file
         return pd.read_excel(io.BytesIO(decoded))
+    # todo: add behaviour for invalid file upload
 
 
 @app.callback(Output('params_table', 'data'),
               Output('params_table', 'columns'),
               Input('upload-params', 'contents'),
               State('upload-params', 'filename'))
-def update_output(contents, filename):
+def update_params(contents, filename):
+    # todo: display fraction #s
     volume = []
     gradient = []
     if contents is None:
@@ -219,6 +221,7 @@ def start_tab(btn1,cur_tab):
     if "startclick"== ctx.triggered_id and sequence_in_progress==False:
         sequence_in_progress=True;
         start_time = time.time();
+        # todo: put whatever function runs a sequence here
         return 'monitor';
     else:
         # this part of the callback is so that Dash's
@@ -337,10 +340,11 @@ def update_status_display(on, tab):
 # currently not having pause/resume button change to be a RUN button.
 # we can implement that in the future if requested.
 
-
 # ----------------------------------------------------------
 
-##tab debug
+
+
+# Debug Tab Callbacks --------------------------------------
 @app.callback(
     Output('one','children'),
     Input('pump1','on'),)
