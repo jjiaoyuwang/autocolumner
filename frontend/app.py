@@ -187,7 +187,9 @@ def parse_contents(contents, filename):
               Input('upload-params', 'contents'),
               State('upload-params', 'filename'))
 def update_params(contents, filename):
-    '''Sets sequence parameters from uploaded file, displays them in table'''
+    '''
+    Sets sequence parameters from uploaded file, displays them in table.
+    Also responsible for rendering the table when the page is loaded.'''
     global sequence_volumes
     global sequence_gradients
     
@@ -207,15 +209,53 @@ def update_params(contents, filename):
         sequence_volumes = volume
         sequence_gradients = gradient
         return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns]
-     
     else:
-        #todo: add branch for when the page is loaded
-        # where it displays the stored sequence parameters
-        return [{}], []
+        # if this callback wasn't triggered by uploading new parameters
+        # then it must be from the page loading,
+        # so we display the stored parameters.
+        df = pd.DataFrame()
+        num_rows = max(len(sequence_volumes), len(sequence_gradients))
+        df['#'] = np.arange(1,num_rows+1)
+        df['volume'] = sequence_volumes
+        df['gradient'] = sequence_gradients
+        return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns]
 
 
 # todo: callback for enabling run button
 # based on sequence parameters
+@app.callback(
+    Output('startclick','disabled'),
+    Input('params_table','data'))
+def validate_params(displayed_params):
+    '''
+    Validates the sequence parameters after the table displaying them changes.
+    '''
+    global sequence_volumes
+    global sequence_gradients
+    valid = validation_function(sequence_volumes, sequence_gradients)
+    if valid:
+        print("Parameters valid")
+    else:
+        print("Parameters invalid")
+    # return the opposite of the validity,
+    # since we are setting the "disabled" property of the start button, not an "enabled" property.
+    return not valid;
+
+def validation_function(vols, grads):
+    '''
+    Boolean function for validating parameters, returns true if they are valid and false otherwise.
+    
+    vols: a list representing the volume of each fraction
+    grads: a list representing the gradient of each fraction
+    '''
+    # this is currently placeholder. Joseph can update this as he pleases.
+    # just check that the lists are the same length
+    # and that they are all numbers
+    if not all(isinstance(v, int) for v in vols):
+        return False
+    if not all(isinstance(g, int) for g in grads):
+        return False
+    return (len(vols) > 0) and (len(vols) == len(grads))
 
 # Run Button
 @app.callback(
