@@ -186,28 +186,34 @@ def parse_contents(contents, filename):
               Input('upload-params', 'contents'),
               State('upload-params', 'filename'))
 def update_params(contents, filename):
-    # todo: display fraction #s
-    volume = []
-    gradient = []
-    if contents is None:
-        return [{}], []
-    df = parse_contents(contents, filename)
-    # for i in df.columns:
-    #     print({"name": i, "id": i})
-        # volume.append(i[0])
-        # gradient.append(i[1])
-    # print(volume)
-    # print(gradient)
-    for i in df.to_dict('records'):
-        volume.append(i['volume'])
-        gradient.append(i['gradient'])
-    print(volume)
-    print(gradient)
     global sequence_volumes
-    sequence_volumes = volume
     global sequence_gradients
-    sequence_gradients = gradient
-    return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns]
+    
+    if ctx.triggered_id == 'upload-params':
+        volume = []
+        gradient = []
+        if contents is None:
+            return [{}], []
+        df = parse_contents(contents, filename)
+        df['#'] = np.arange(1,len(df)+1)
+        df = df[['#','volume','gradient']]
+        for i in df.to_dict('records'):
+            volume.append(i['volume'])
+            gradient.append(i['gradient'])
+        print(volume)
+        print(gradient)
+        sequence_volumes = volume
+        sequence_gradients = gradient
+        return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns]
+     
+    else:
+        #todo: add branch for when the page is loaded
+        # where it displays the stored sequence parameters
+        return [{}], []
+
+
+# todo: callback for enabling run button
+# based on sequence parameters
 
 # Run Button
 @app.callback(
