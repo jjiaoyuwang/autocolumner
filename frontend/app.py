@@ -169,6 +169,7 @@ app.layout = html.Div([
 
 # Setup Tab Callbacks ------------------------------
 def parse_contents(contents, filename):
+    '''Parses csv and xls files to a Pandas Dataframe'''
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
     if 'csv' in filename:
@@ -186,6 +187,7 @@ def parse_contents(contents, filename):
               Input('upload-params', 'contents'),
               State('upload-params', 'filename'))
 def update_params(contents, filename):
+    '''Sets sequence parameters from uploaded file, displays them in table'''
     global sequence_volumes
     global sequence_gradients
     
@@ -222,6 +224,7 @@ def update_params(contents, filename):
     State('Main_Tabs','value')
     )
 def start_tab(btn1,cur_tab):
+    '''Callback for the starting the sequence'''
     global sequence_in_progress;
     global start_time;
     if "startclick"== ctx.triggered_id and sequence_in_progress==False:
@@ -239,15 +242,15 @@ def start_tab(btn1,cur_tab):
 
 # Monitor Tab Callbacks ----------------------------
 
-# update time elapsed
-    # todo: change to using a clientside callback for performance
-    # make sure to sync the client's displayed time with the serverside time every couple minutes.
 @app.callback(
     Output('messageoftime','children'),
     Input('interval-component', 'n_intervals'),
     Input('Main_Tabs', 'value'),
     )
 def updatetiming(on, tab):
+    '''Updates time elapsed display'''
+    # todo: change to using a clientside callback for performance
+    # make sure to sync the client's displayed time with the serverside time every couple minutes.
     global start_time;
     global sequence_in_progress;
     # not sure timing_message needs to be global
@@ -258,16 +261,18 @@ def updatetiming(on, tab):
         timing_message = "Time: " + cur_time;
     return timing_message;
 
-# update current fraction display
-    # IMPORTANT: you cannot call a function to update the display
-    # you need to change the global variable 'arm_pos'
-    # and this will update the display to match next time the timer changes
 @app.callback(
     Output("messageoffraction", "children"),
     Input('interval-component', 'n_intervals'),
     Input('Main_Tabs', 'value'),
     )
 def update_fraction_display(on, tab):
+    '''
+    Updates current fraction display
+    
+    IMPORTANT: you cannot call a function to update the display
+    you need to change the global variable 'arm_pos'
+    and this will update the display to match next time the timer changes'''
     global arm_pos;
     global sequence_volumes;
     if sequence_in_progress:
@@ -277,6 +282,7 @@ def update_fraction_display(on, tab):
     return cur_f_str;
 
 def get_cur_fraction_msg(cur_fraction, last_fraction):
+    '''Formats fraction message given the current fraction and last fraction'''
     return "Fraction #: {:0}/{:1}".format(cur_fraction, last_fraction);
 
 # update current volume dispensed display
@@ -287,6 +293,7 @@ def get_cur_fraction_msg(cur_fraction, last_fraction):
     Input('Main_Tabs', 'value'),
     )
 def update_volume_display(on, tab):
+    '''updates volume display'''
     global sequence_in_progress;
     global arm_pos;
     if not sequence_in_progress:
@@ -297,17 +304,21 @@ def update_volume_display(on, tab):
     return get_vol_msg(so_far_vol, final_vol);
 
 def get_vol_msg(so_far_vol, final_vol):
+    '''formats volume message given current volume and total volume'''
     return "Volume Dispensed: {:0}/{:1} mL".format(so_far_vol, final_vol);
 
-# update current status message
-    # edit the global variable status_message
-    # and this will update the page to match that later
 @app.callback(
     Output("mntr_status_message", "children"),
     Input('interval-component', 'n_intervals'),
     Input('Main_Tabs', 'value'),
     )
 def update_status_display(on, tab):
+    '''
+    updates current status message
+    
+    edit the global variable status_message
+    and this will update the page to match that later
+    '''
     global status_message;
     return status_message;
 
@@ -355,6 +366,7 @@ def update_status_display(on, tab):
     Output('one','children'),
     Input('pump1','on'),)
 def pump1run(on):
+    '''turns pump1 on/off'''
     global pump1;
     if on is True:
         pump1=True;
@@ -370,6 +382,7 @@ def pump1run(on):
     Output('two','children'),
     Input('pump2','on'),)
 def pump2run(on):
+    '''turns pump2 on/off'''
     global pump2;
     if on is True:
         pump2=True;
@@ -384,6 +397,7 @@ def pump2run(on):
     Output('three','children'),
     Input('vacuum','on'),)
 def vacuumrun(on):
+    '''turns the vacuum on/off'''
     global vacuum;
     if on is True:
         vacuum=True;
@@ -398,6 +412,7 @@ def vacuumrun(on):
     Output('four','children'),
     Input('sep_funnel','on'),)
 def sepfunnelrun(on):
+    '''turns the separation funnel on/off'''
     global sep_funnel;
     if on is True:
         sep_funnel=True;
@@ -415,6 +430,7 @@ def sepfunnelrun(on):
     Input('bigger', 'n_clicks'),
     Input('biggest', 'n_clicks'),)
 def arm_run(btn1,btn2,btn3,btn4):
+    '''Callback function for moving the arm, depending on which arm control button was pressed'''
     global arm_pos;
     global Min_armpos;
     global Max_armpos;
