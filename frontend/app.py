@@ -40,21 +40,21 @@ sequence_in_progress=False;
 arm_pos=1;#the position of arm
 Min_armpos=1;##the min of arm position
 Max_armpos=10;##the max of arm position. todo: calculate from sequence parameters?
-pump1=False;
-pump2=False;
-vacuum=False;
-sep_funnel=False;
+pump1=False;##the condition of pump1. Default false.
+pump2=False;##the condition of pump2. Default false.
+vacuum=False;##the condition of vacuum. Default false.
+sep_funnel=False;##the condition of separating funnel . Default false.
 sequence_volumes = [] 
 sequence_gradients = []
 
 status_message = "placeholder status message"
 #---------------------------------------------------------------
 
-hardware_pump1=pump.Pump("1");
-hardware_pump2=pump.Pump("2");
-hardware_vacuum=vacuum_hardware.Vacuum("3");
-hardware_sep=sepfunnel.Sepfunnel("4");
-hardware_arm=arm.Arm("5",arm_pos);
+hardware_pump1=pump.Pump("1");##pump1
+hardware_pump2=pump.Pump("2");##pump2
+hardware_vacuum=vacuum_hardware.Vacuum("3");##vacuum
+hardware_sep=sepfunnel.Sepfunnel("4");##separating funnel
+hardware_arm=arm.Arm("5",arm_pos);#machine arm
 
 message_fraction= "Fraction: {:0}/{:1}".format(0, 0);
 timing_message="Time: 00:00:00";
@@ -410,10 +410,10 @@ def pump1run(on):
     global pump1;
     if on is True:
         pump1=True;
-        print(hardware_pump1.on());
+        print(hardware_pump1.on());##this just used to check whether it can call the external function
     elif on is False:
         pump1=False;
-        print(hardware_pump1.off());
+        print(hardware_pump1.off());##this just used to check whether it can call the external function
     msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',sep funnel is '+str(sep_funnel);
     print(msg);
 
@@ -426,10 +426,10 @@ def pump2run(on):
     global pump2;
     if on is True:
         pump2=True;
-        print(hardware_pump2.on());
+        print(hardware_pump2.on());##this just used to check whether it can call the external function
     elif on is False:
         pump2=False;
-        print(hardware_pump2.off());
+        print(hardware_pump2.off());##this just used to check whether it can call the external function
     msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',sep funnel is '+str(sep_funnel);
     print(msg); 
 
@@ -441,10 +441,10 @@ def vacuumrun(on):
     global vacuum;
     if on is True:
         vacuum=True;
-        print(hardware_vacuum.on());
+        print(hardware_vacuum.on());##this just used to check whether it can call the external function
     elif on is False:
         vacuum=False;
-        print(hardware_vacuum.off());
+        print(hardware_vacuum.off());##this just used to check whether it can call the external function
     msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',sep funnel is '+str(sep_funnel);
     print(msg); 
 
@@ -456,10 +456,10 @@ def sepfunnelrun(on):
     global sep_funnel;
     if on is True:
         sep_funnel=True;
-        print(hardware_sep.on());
+        print(hardware_sep.on());##this just used to check whether it can call the external function
     elif on is False:
         sep_funnel=False;
-        print(hardware_sep.off())
+        print(hardware_sep.off());##this just used to check whether it can call the external function
     msg='pump1 is '+str(pump1)+',pump2 is '+str(pump2)+',vacuum is '+str(vacuum)+',sep funnel is '+str(sep_funnel);
     print(msg); 
 
@@ -475,16 +475,16 @@ def arm_run(btn1,btn2,btn3,btn4):
     global Min_armpos;
     global Max_armpos;
     if "smallest" == ctx.triggered_id:# turn the arm to the min position
-        print(hardware_arm.tomin());
+        print(hardware_arm.tomin());##this just used to check whether it can call the external function
         arm_pos=Min_armpos;##this can be delete if use arm.py
     elif "smaller"== ctx.triggered_id and arm_pos>Min_armpos:
-        print(hardware_arm.smaller());
+        print(hardware_arm.smaller());##this just used to check whether it can call the external function
         arm_pos=arm_pos-1;##this can be delete if use arm.py
     elif "bigger"==ctx.triggered_id and arm_pos<Max_armpos:
-        print(hardware_arm.bigger());
+        print(hardware_arm.bigger());##this just used to check whether it can call the external function
         arm_pos=arm_pos+1;##this can be delete if use arm.py
     elif "biggest"==ctx.triggered_id:#turn the arm to the max position
-        print(hardware_arm.tomax());
+        print(hardware_arm.tomax());##this just used to check whether it can call the external function
         arm_pos=Max_armpos;##this can be delete if use arm.py
     ##msg='arm at #'+str(arm_pos);
     msg='Arm at #'+str(hardware_arm.position);
