@@ -5,11 +5,11 @@ class Pump:
 
 
     def on(self):
-        self.status=True;
+        self.status=True;#turn on
         return "the pump "+self.id+"  is on.";
     
 
     def off(self):
-        self.status=False;
+        self.status=False;#turn off
         return "the pump "+self.id+" is off.";
     
