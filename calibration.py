@@ -9,8 +9,8 @@ def corner_st(im, n_grids=8):
     gray = utils.denoise(gray)
     h, w = gray.shape
     mask = np.ones(gray.shape, np.uint8)
-    h_lim = [int(h / n_grids), int(h * (1 - n_grids) / n_grids)]
-    w_lim = [int(w / n_grids), int(w * (1 - n_grids) / n_grids)]
+    h_lim = [int(h / n_grids), int(h * (n_grids - 1) / n_grids)]
+    w_lim = [int(w / n_grids), int(w * (n_grids - 1) / n_grids)]
     mask[h_lim[0]:h_lim[1], w_lim[0]:w_lim[1]] = 0
 
     corners = cv.goodFeaturesToTrack(image=gray, maxCorners=50, qualityLevel=0.1, minDistance=w / 2, mask=mask)
