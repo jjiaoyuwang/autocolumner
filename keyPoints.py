@@ -1,3 +1,8 @@
+"""
+These are some key-points detection method I've tried
+ORB is the best among them
+"""
+
 import cv2 as cv
 import utils
 

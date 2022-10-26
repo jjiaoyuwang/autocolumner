@@ -1,3 +1,7 @@
+"""
+This module is for margin line detection
+"""
+
 import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
@@ -8,7 +12,10 @@ import utils
 
 
 def l_eq(line):
-    """given 2 points, calculate line equation y=mx+c"""
+    """
+    given 2 points, calculate line equation y=mx+c,
+    return line coefficients
+    """
     points = get_points([line])[0]
     x_coords, y_coords = zip(*points)
     A = np.vstack([x_coords, np.ones(len(x_coords))]).T
