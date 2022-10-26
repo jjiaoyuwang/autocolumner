@@ -11,6 +11,7 @@ beta = 2
 std_th = 0.06
 perp_th = 0.04
 
+
 def total_ls(M: np.ndarray):
     m, _ = M.shape
     A = M - np.mean(M, axis=0)
@@ -26,6 +27,7 @@ def total_ls(M: np.ndarray):
     D = np.abs(_M @ theta)
 
     return (a, b, c), D
+
 
 # updated
 def cluster(M: np.ndarray):
@@ -52,7 +54,6 @@ def cluster(M: np.ndarray):
 
 
 def ls(M: np.ndarray):
-
     def func(y, a, b, c):
         return (-b * y - c) / a
 
@@ -91,6 +92,11 @@ def opt(clusterList: list):
                     cl.append(C_r)
                 else:
                     cl.append(C)
+    for i, C in enumerate(cl):
+        x, _ = np.mean(C, axis=0)
+        y = L @ np.array([x, 1])
+        P = np.stack((np.array([x, x]), y))
+        cl[i] = np.vstack((C, P.T))
     return cl
 
 
@@ -100,18 +106,22 @@ def rf_calc(C: np.ndarray):
     y.sort()
     y = y / np.max(y)
 
-    return np.round(y[(0 < y) & (y < 1)],decimals=3)
+    return np.round(y[(0 < y) & (y < 1)], decimals=3)
 
 
-def rf(M: np.ndarray,width):
+def rf(M: np.ndarray, width, line_coefficient):
     global w
+    global L
     w = width
+    L = line_coefficient
+
     rfs = []
     cl = cluster(M)
     cl.sort(key=lambda x: np.mean(x, axis=0)[0])
     cl = opt(cl)
     for c in cl:
         rfs.append(rf_calc(c))
+
     return rfs
 
 
@@ -121,8 +131,9 @@ if __name__ == '__main__':
     files = os.listdir(imDir)
 
     for f in files:
-        im, _ = utils.imread(imDir + f)
-        h, w, _ = im.shape
+        im, gray = utils.imread(imDir + f)
+        h, w = gray.shape
+        _, line_coefficient = utils.mask(gray)
         M = np.load(arrDir + f.split('.')[0] + '.npy')
-        rfs = rf(M, w)
+        rfs = rf(M, w,line_coefficient)
         print(rfs)
