@@ -5,10 +5,10 @@ class Sepfunnel:
 
 
     def on(self):
-        self.status=True;
+        self.status=True;#turn on
         return "the sep_funnel "+self.id+"  is on.";
     
 
     def off(self):
-        self.status=False;
+        self.status=False;#turn on
         return "the sep_funnel "+self.id+" is off.";
